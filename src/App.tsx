@@ -6,6 +6,7 @@ import Footer from './components/footer';
 import AuthMenu from './components/authmenu';
 import Dashboard from './components/dashboard';
 import FlightDashboard from './components/flightdashboard';
+import AdminDashboard from './components/admindashboard';
 import './assets/styles/style.css';
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/booking" element={<div>Booking Page</div>} />
         <Route path="/flights" element={<FlightDashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
       <Footer />
     </div>

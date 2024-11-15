@@ -34,8 +34,13 @@ function AuthMenu() {
     e.preventDefault();
     setError('');
 
-    const genericEmail = 'user';
-    const genericPassword = '123';
+    // Credenciales genéricas temporales
+    const genericEmail = 'user@example.com';
+    const genericPassword = 'password123';
+
+    // Credenciales de administrador
+    const adminEmail = 'admin@example.com';
+    const adminPassword = 'admin123';
 
     if (formData.email === genericEmail && formData.password === genericPassword) {
       const userData = {
@@ -46,6 +51,15 @@ function AuthMenu() {
       localStorage.setItem('user', JSON.stringify(userData));
       login(userData);
       navigate('/dashboard');
+    } else if (formData.email === adminEmail && formData.password === adminPassword) {
+      const adminData = {
+        id: 2,
+        nombre: 'Administrador',
+        email: adminEmail,
+      };
+      localStorage.setItem('admin', JSON.stringify(adminData));
+      login(adminData);
+      navigate('/admin');
     } else {
       setError('Credenciales incorrectas o usuario no encontrado.');
     }

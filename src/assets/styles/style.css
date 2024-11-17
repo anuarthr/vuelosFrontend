@@ -13,6 +13,7 @@ body, html {
 
 .container {
   padding: 20px;
+  flex: 1;
 }
 
 .nav-bar {
@@ -99,7 +100,7 @@ body, html {
 }
 
 .booking-button {
-  background-color: #007bff;
+  background-color: #193E8A;
   color: white;
   padding: 15px 30px;
   border: none;
@@ -129,4 +130,61 @@ body, html {
   font-size: 0.9em;
   color: #555;
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: auto;
+}
+
+.admin-dashboard {
+  padding: 20px;
+  flex: 1;
+}
+
+.card {
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 1.5em;
+  font-weight: 500;
+}
+
+.card-text {
+  font-size: 1em;
+  color: #555;
+}
+
+.table {
+  margin-top: 20px;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
+
+.modal-title {
+  font-size: 1.5em;
+  font-weight: 500;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.form-label {
+  font-weight: 500;
+}
+
+.form-control {
+  margin-bottom: 10px;
+}
+
+.btn-primary, .btn-secondary, .btn-info, .btn-success, .btn-danger, .btn-warning {
+  margin-right: 10px;
+  background-color: #193E8A;
+  border-color: #193E8A;
+  color: white;
+}
+
+.btn-primary:hover, .btn-secondary:hover, .btn-info:hover, .btn-success:hover, .btn-danger:hover, .btn-warning:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
 }

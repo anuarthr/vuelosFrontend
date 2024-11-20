@@ -28,29 +28,36 @@ const Dashboard = () => {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
+    if (!user || !user.id) {
+      setError('Usuario no autenticado');
+      return;
+    }
+
     // Fetch user reservations
     const fetchReservations = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/reservations?userId=${user.id}`);
+        const response = await axios.get(`http://localhost:8081/api/v1/reservations?userId=${user.id}`);
         setReservations(response.data);
       } catch (error) {
         console.error('Error fetching reservations:', error);
+        setError('Error al obtener las reservas');
       }
     };
 
     // Fetch available flights
     const fetchFlights = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/flights');
+        const response = await axios.get('http://localhost:8081/api/v1/flights');
         setFlights(response.data);
       } catch (error) {
         console.error('Error fetching flights:', error);
+        setError('Error al obtener los vuelos');
       }
     };
 
     fetchReservations();
     fetchFlights();
-  }, [user.id]);
+  }, [user]);
 
   const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
     const { name, value } = e.target;
@@ -73,7 +80,7 @@ const Dashboard = () => {
     setError('');
     setSuccess('');
     try {
-      const response = await axios.post('http://localhost:8080/api/reservations', {
+      const response = await axios.post('http://localhost:8081/api/v1/reservations', {
         userId: user.id,
         ...formData,
       });
@@ -88,7 +95,7 @@ const Dashboard = () => {
 
   const handleDeleteReservation = async (reservationId) => {
     try {
-      await axios.delete(`http://localhost:8080/api/reservations/${reservationId}`);
+      await axios.delete(`http://localhost:8081/api/v1/reservations/${reservationId}`);
       setReservations(reservations.filter(reservation => reservation.id !== reservationId));
       setSuccess('Reserva cancelada exitosamente');
     } catch (error) {
@@ -102,13 +109,25 @@ const Dashboard = () => {
     setError('');
     setSuccess('');
     try {
-      const response = await axios.put(`http://localhost:8080/api/users/${user.id}`, profileData);
+      const response = await axios.put(`http://localhost:8081/api/v1/users/${user.id}`, profileData);
       login(response.data);
       setShowEditProfileModal(false);
       setSuccess('Perfil actualizado exitosamente');
     } catch (error) {
       console.error('Error updating profile:', error);
       setError('Error al actualizar el perfil');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      await axios.delete(`http://localhost:8081/api/v1/users/${user.id}`);
+      // Logout the user after deleting the account
+      login(null);
+      navigate('/login');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setError('Error al eliminar la cuenta');
     }
   };
 
@@ -152,6 +171,9 @@ const Dashboard = () => {
           </Card>
         </Col>
       </Row>
+      <Button variant="danger" className="mt-3" onClick={handleDeleteAccount}>
+        Eliminar Cuenta
+      </Button>
       <Button variant="success" className="mt-3" onClick={() => setShowReservations(!showReservations)}>
         {showReservations ? 'Ocultar Reservas y Vuelos' : 'Ver Reservas y Vuelos'}
       </Button>

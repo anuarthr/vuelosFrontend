@@ -1,92 +1,72 @@
 import React, { useState } from 'react';
-import { Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../contexts/authcontext';
+import { Form, Button, Alert } from 'react-bootstrap';
+import axios from 'axios';
 
-function AuthMenu() {
+const AuthMenu = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     username: '',
+    password: '',
     nombre: '',
     apellido: '',
     direccion: '',
     telefono: '',
     email: '',
-    password: '',
   });
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const toggleAuthMode = () => {
-    setIsLogin(!isLogin);
-  };
-
-  const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
 
-  const handleLogin = async (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
-    try {
-      const response = await axios.post('http://localhost:8081/api/v1/auth/login', {
-        username: formData.username,
-        password: formData.password,
-      });
-      login(response.data);
-      navigate('/dashboard');
-    } catch (error) {
-      setError('Error al iniciar sesión: ' + error.message);
+    if (isLogin) {
+      try {
+        const response = await axios.post('http://localhost:8081/api/v1/auth/login', {
+          username: formData.username,
+          password: formData.password,
+        });
+        const userData = response.data;
+        login(userData);
+        if (userData.roles.includes('ROLE_ADMIN')) {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
+      } catch (error) {
+        setError('Invalid credentials');
+      }
+    } else {
+      try {
+        await axios.post('http://localhost:8081/api/v1/auth/signup', formData);
+        setIsLogin(true);
+      } catch (error) {
+        setError('Error registering user');
+      }
     }
   };
 
-  const handleRegister = async (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
+  const toggleAuthMode = () => {
+    setIsLogin(!isLogin);
     setError('');
-
-    try {
-      const response = await axios.post('http://localhost:8081/api/v1/auth/signup', {
-        username: formData.username,
-        nombre: formData.nombre,
-        apellido: formData.apellido,
-        direccion: formData.direccion,
-        telefono: formData.telefono,
-        email: formData.email,
-        password: formData.password,
-      });
-      login(response.data);
-      navigate('/dashboard');
-    } catch (error) {
-      setError('Error al registrar el usuario: ' + error.message);
-    }
   };
 
   return (
     <div className="auth-menu">
       <h2>{isLogin ? 'Iniciar Sesión' : 'Registrarse'}</h2>
       {error && <Alert variant="danger">{error}</Alert>}
-      <Form onSubmit={isLogin ? handleLogin : handleRegister}>
-        {isLogin ? (
-          <>
-            <Form.Group controlId="formUsername" className="mb-3">
-              <Form.Label>Nombre de Usuario</Form.Label>
-              <Form.Control
-                type="text"
-                name="username"
-                placeholder="Ingrese su nombre de usuario"
-                value={formData.username}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-          </>
-        ) : (
+      <Form onSubmit={handleSubmit}>
+        {!isLogin && (
           <>
             <Form.Group controlId="formNombre" className="mb-3">
               <Form.Label>Nombre</Form.Label>
@@ -123,25 +103,35 @@ function AuthMenu() {
               <Form.Control
                 type="text"
                 name="telefono"
-                placeholder="Ingrese su teléfono"
+                placeholder="Ingrese su número"
                 value={formData.telefono}
                 onChange={handleInputChange}
               />
             </Form.Group>
             <Form.Group controlId="formEmail" className="mb-3">
-              <Form.Label>Email</Form.Label>
+              <Form.Label>Correo electrónico</Form.Label>
               <Form.Control
                 type="email"
                 name="email"
-                placeholder="Ingrese su email"
+                placeholder="Ingrese su correo"
                 value={formData.email}
                 onChange={handleInputChange}
               />
             </Form.Group>
           </>
         )}
+        <Form.Group controlId="formUsername" className="mb-3">
+          <Form.Label>Username</Form.Label>
+          <Form.Control
+            type="text"
+            name="username"
+            placeholder="Ingrese su nombre de usuario"
+            value={formData.username}
+            onChange={handleInputChange}
+          />
+        </Form.Group>
         <Form.Group controlId="formPassword" className="mb-3">
-          <Form.Label>Contraseña</Form.Label>
+          <Form.Label>Password</Form.Label>
           <Form.Control
             type="password"
             name="password"
@@ -165,6 +155,6 @@ function AuthMenu() {
       </p>
     </div>
   );
-}
+};
 
 export default AuthMenu;

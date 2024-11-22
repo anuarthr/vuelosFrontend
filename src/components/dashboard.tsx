@@ -88,7 +88,7 @@ const Dashboard = () => {
       setShowModal(false);
       setSuccess('Reserva realizada exitosamente');
     } catch (error) {
-      console.error('Error making reservation:', error);
+      console.error('Error haciendo la reservación:', error);
       setError('Error al realizar la reserva');
     }
   };

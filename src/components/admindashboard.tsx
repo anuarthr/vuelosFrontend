@@ -5,7 +5,9 @@ import axios from 'axios';
 const AdminDashboard = () => {
   const [flights, setFlights] = useState([]);
   const [reservations, setReservations] = useState([]);
+  const [airlines, setAirlines] = useState([]);
   const [formData, setFormData] = useState({
+    id: '',
     destination: '',
     date: '',
     price: '',
@@ -13,22 +15,32 @@ const AdminDashboard = () => {
     airport: '',
   });
   const [reservationData, setReservationData] = useState({
+    id: '',
     userId: '',
     flightId: '',
     date: '',
+  });
+  const [airlineData, setAirlineData] = useState({
+    idAerolinea: '',
+    nombre: '',
+    codigoAerolinea: '',
+    paisDeOrigen: '',
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showFlights, setShowFlights] = useState(false);
   const [showReservations, setShowReservations] = useState(false);
+  const [showAirlines, setShowAirlines] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const flightsResponse = await axios.get('http://localhost:8081/api/v1/flights');
         const reservationsResponse = await axios.get('http://localhost:8081/api/v1/reservations');
+        const airlinesResponse = await axios.get('http://localhost:8081/api/v1/aerolineas');
         setFlights(flightsResponse.data);
         setReservations(reservationsResponse.data);
+        setAirlines(airlinesResponse.data);
       } catch (error) {
         setError('Error fetching data');
       }
@@ -53,16 +65,30 @@ const AdminDashboard = () => {
     }));
   };
 
+  const handleAirlineInputChange = (e) => {
+    const { name, value } = e.target;
+    setAirlineData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
   const handleFlightSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
     try {
-      const response = await axios.post('http://localhost:8081/api/v1/flights', formData);
-      setFlights([...flights, response.data]);
-      setSuccess('Flight added successfully');
+      if (formData.id) {
+        await axios.put(http://localhost:8081/api/v1/flights/${formData.id}, formData);
+        setFlights(flights.map((flight) => (flight.id === formData.id ? formData : flight)));
+        setSuccess('Flight updated successfully');
+      } else {
+        const response = await axios.post('http://localhost:8081/api/v1/flights', formData);
+        setFlights([...flights, response.data]);
+        setSuccess('Flight added successfully');
+      }
     } catch (error) {
-      setError('Error adding flight');
+      setError('Error adding/updating flight');
     }
   };
 
@@ -71,17 +97,42 @@ const AdminDashboard = () => {
     setError('');
     setSuccess('');
     try {
-      const response = await axios.post('http://localhost:8081/api/v1/reservations', reservationData);
-      setReservations([...reservations, response.data]);
-      setSuccess('Reservation added successfully');
+      if (reservationData.id) {
+        await axios.put(http://localhost:8081/api/v1/reservations/${reservationData.id}, reservationData);
+        setReservations(reservations.map((reservation) => (reservation.id === reservationData.id ? reservationData : reservation)));
+        setSuccess('Reservation updated successfully');
+      } else {
+        const response = await axios.post('http://localhost:8081/api/v1/reservations', reservationData);
+        setReservations([...reservations, response.data]);
+        setSuccess('Reservation added successfully');
+      }
     } catch (error) {
-      setError('Error adding reservation');
+      setError('Error adding/updating reservation');
+    }
+  };
+
+  const handleAirlineSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    try {
+      if (airlineData.idAerolinea) {
+        await axios.put(http://localhost:8081/api/v1/aerolineas/${airlineData.idAerolinea}, airlineData);
+        setAirlines(airlines.map((airline) => (airline.idAerolinea === airlineData.idAerolinea ? airlineData : airline)));
+        setSuccess('Airline updated successfully');
+      } else {
+        const response = await axios.post('http://localhost:8081/api/v1/aerolineas', airlineData);
+        setAirlines([...airlines, response.data]);
+        setSuccess('Airline added successfully');
+      }
+    } catch (error) {
+      setError('Error adding/updating airline');
     }
   };
 
   const handleDeleteFlight = async (flightId) => {
     try {
-      await axios.delete(`http://localhost:8081/api/v1/flights/${flightId}`);
+      await axios.delete(http://localhost:8081/api/v1/flights/${flightId});
       setFlights(flights.filter((flight) => flight.id !== flightId));
       setSuccess('Flight deleted successfully');
     } catch (error) {
@@ -91,12 +142,37 @@ const AdminDashboard = () => {
 
   const handleDeleteReservation = async (reservationId) => {
     try {
-      await axios.delete(`http://localhost:8081/api/v1/reservations/${reservationId}`);
+      await axios.delete(http://localhost:8081/api/v1/reservations/${reservationId});
       setReservations(reservations.filter((reservation) => reservation.id !== reservationId));
       setSuccess('Reservation deleted successfully');
     } catch (error) {
       setError('Error deleting reservation');
     }
+  };
+
+  const handleDeleteAirline = async (airlineId) => {
+    try {
+      await axios.delete(http://localhost:8081/api/v1/aerolineas/${airlineId});
+      setAirlines(airlines.filter((airline) => airline.idAerolinea !== airlineId));
+      setSuccess('Airline deleted successfully');
+    } catch (error) {
+      setError('Error deleting airline');
+    }
+  };
+
+  const handleEditFlight = (flight) => {
+    setFormData(flight);
+    setShowFlights(true);
+  };
+
+  const handleEditReservation = (reservation) => {
+    setReservationData(reservation);
+    setShowReservations(true);
+  };
+
+  const handleEditAirline = (airline) => {
+    setAirlineData(airline);
+    setShowAirlines(true);
   };
 
   return (
@@ -105,7 +181,7 @@ const AdminDashboard = () => {
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
       <Row>
-        <Col md={6}>
+        <Col md={4}>
           <Card>
             <Card.Body>
               <Card.Title>Opciones de Vuelos</Card.Title>
@@ -134,6 +210,9 @@ const AdminDashboard = () => {
                           <td>{flight.airline}</td>
                           <td>{flight.airport}</td>
                           <td>
+                            <Button variant="warning" onClick={() => handleEditFlight(flight)}>
+                              Editar
+                            </Button>
                             <Button variant="danger" onClick={() => handleDeleteFlight(flight.id)}>
                               Eliminar
                             </Button>
@@ -193,7 +272,17 @@ const AdminDashboard = () => {
                       />
                     </Form.Group>
                     <Button variant="primary" type="submit">
-                      Agregar Vuelo
+                      {formData.id ? 'Actualizar Vuelo' : 'Agregar Vuelo'}
+                    </Button>
+                    <Button variant="secondary" className="ms-2" onClick={() => setFormData({
+                      id: '',
+                      destination: '',
+                      date: '',
+                      price: '',
+                      airline: '',
+                      airport: '',
+                    })}>
+                      Limpiar
                     </Button>
                   </Form>
                 </>
@@ -201,7 +290,7 @@ const AdminDashboard = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={6}>
+        <Col md={4}>
           <Card>
             <Card.Body>
               <Card.Title>Opciones de Reservas</Card.Title>
@@ -226,6 +315,9 @@ const AdminDashboard = () => {
                           <td>{reservation.flightId}</td>
                           <td>{reservation.date}</td>
                           <td>
+                            <Button variant="warning" onClick={() => handleEditReservation(reservation)}>
+                              Editar
+                            </Button>
                             <Button variant="danger" onClick={() => handleDeleteReservation(reservation.id)}>
                               Eliminar
                             </Button>
@@ -265,7 +357,99 @@ const AdminDashboard = () => {
                       />
                     </Form.Group>
                     <Button variant="primary" type="submit">
-                      Agregar Reserva
+                      {reservationData.id ? 'Actualizar Reserva' : 'Agregar Reserva'}
+                    </Button>
+                    <Button variant="secondary" className="ms-2" onClick={() => setReservationData({
+                      id: '',
+                      userId: '',
+                      flightId: '',
+                      date: '',
+                    })}>
+                      Limpiar
+                    </Button>
+                  </Form>
+                </>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={4}>
+          <Card>
+            <Card.Body>
+              <Card.Title>Opciones de Aerolíneas</Card.Title>
+              <Button variant="primary" onClick={() => setShowAirlines(!showAirlines)}>
+                {showAirlines ? 'Ocultar Aerolíneas' : 'Ver Aerolíneas'}
+              </Button>
+              {showAirlines && (
+                <>
+                  <Table striped bordered hover className="mt-3">
+                    <thead>
+                      <tr>
+                        <th>Nombre</th>
+                        <th>Código</th>
+                        <th>País de Origen</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {airlines.map((airline) => (
+                        <tr key={airline.idAerolinea}>
+                          <td>{airline.nombre}</td>
+                          <td>{airline.codigoAerolinea}</td>
+                          <td>{airline.paisDeOrigen}</td>
+                          <td>
+                            <Button variant="warning" onClick={() => handleEditAirline(airline)}>
+                              Editar
+                            </Button>
+                            <Button variant="danger" onClick={() => handleDeleteAirline(airline.idAerolinea)}>
+                              Eliminar
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                  <Form onSubmit={handleAirlineSubmit} className="mt-3">
+                    <Form.Group controlId="formNombre" className="mb-3">
+                      <Form.Label>Nombre</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="nombre"
+                        placeholder="Ingrese el nombre"
+                        value={airlineData.nombre}
+                        onChange={handleAirlineInputChange}
+                      />
+                    </Form.Group>
+                    <Form.Group controlId="formCodigoAerolinea" className="mb-3">
+                      <Form.Label>Código de Aerolínea</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="codigoAerolinea"
+                        placeholder="Ingrese el código de aerolínea"
+                        value={airlineData.codigoAerolinea}
+                        onChange={handleAirlineInputChange}
+                      />
+                    </Form.Group>
+                    <Form.Group controlId="formPaisDeOrigen" className="mb-3">
+                      <Form.Label>País de Origen</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="paisDeOrigen"
+                        placeholder="Ingrese el país de origen"
+                        value={airlineData.paisDeOrigen}
+                        onChange={handleAirlineInputChange}
+                      />
+                    </Form.Group>
+                    <Button variant="primary" type="submit">
+                      {airlineData.idAerolinea ? 'Actualizar Aerolínea' : 'Agregar Aerolínea'}
+                    </Button>
+                    <Button variant="secondary" className="ms-2" onClick={() => setAirlineData({
+                      idAerolinea: '',
+                      nombre: '',
+                      codigoAerolinea: '',
+                      paisDeOrigen: '',
+                    })}>
+                      Limpiar
                     </Button>
                   </Form>
                 </>

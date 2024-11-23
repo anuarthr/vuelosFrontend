@@ -62,8 +62,8 @@ const AuthMenu = () => {
   };
 
   return (
-    <div className="auth-menu">
-      <h2>{isLogin ? 'Iniciar Sesión' : 'Registrarse'}</h2>
+    <div className="auth-menu" style={{width: '100%',maxWidth:'600px', margin: 'auto',padding: '15px',border: '1px solid #ddd',borderRadius: '8px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)'}}>
+      <h2 style={{ fontWeight: 'bold' }}>{isLogin ? 'Iniciar Sesión' : 'Registrarse'}</h2>
       {error && <Alert variant="danger">{error}</Alert>}
       <Form onSubmit={handleSubmit}>
         {!isLogin && (

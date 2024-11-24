@@ -49,9 +49,19 @@ const AdminDashboard = () => {
             </Card.Body>
           </Card>
         </Col>
+        <Col md={3}>
+          <Card>
+            <Card.Body>
+              <Card.Title>Opciones de Aeropuertos</Card.Title>
+              <Button variant="primary" onClick={() => navigate('/admin/airports')}>
+                Gestionar Aeropuertos
+              </Button>
+            </Card.Body>
+          </Card>
+        </Col>
       </Row>
     </div>
   );
 };
 
-export default AdminDashboard;
+export default AdminDashboard;s

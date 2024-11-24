@@ -4,13 +4,18 @@ import axios from 'axios';
 
 const AdminFlights = () => {
   const [flights, setFlights] = useState([]);
+  const [aerolineas, setAerolineas] = useState([]);
+  const [aeropuertos, setAeropuertos] = useState([]);
   const [formData, setFormData] = useState({
     id: '',
-    destination: '',
-    date: '',
-    price: '',
-    airline: '',
-    airport: '',
+    origen: '',
+    destino: '',
+    fechaDeSalida: '',
+    horaDeSalida: '',
+    duracion: '',
+    capacidad: '',
+    aerolineaId: '',
+    aeropuertoId: '',
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -20,12 +25,16 @@ const AdminFlights = () => {
       try {
         const token = localStorage.getItem('token');
         const config = {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: Bearer ${token} }
         };
-        const response = await axios.get('http://localhost:8081/api/v1/vuelos', config);
-        setFlights(response.data);
+        const flightsResponse = await axios.get('http://localhost:8081/api/v1/vuelos', config);
+        setFlights(flightsResponse.data);
+        const aerolineasResponse = await axios.get('http://localhost:8081/api/v1/aerolineas', config);
+        setAerolineas(aerolineasResponse.data);
+        const aeropuertosResponse = await axios.get('http://localhost:8081/api/v1/aeropuertos', config);
+        setAeropuertos(aeropuertosResponse.data);
       } catch (error) {
-        setError('Error fetching flights');
+        setError('Error fetching data');
       }
     };
 
@@ -47,33 +56,30 @@ const AdminFlights = () => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: Bearer ${token} }
       };
       if (formData.id) {
-        await axios.put(`http://localhost:8081/api/v1/vuelos/${formData.id}`, formData, config);
-        setFlights(flights.map((flight) => (flight.id === formData.id ? formData : flight)));
+        await axios.put(http://localhost:8081/api/v1/vuelos/${formData.id}, formData, config);
         setSuccess('Flight updated successfully');
       } else {
-        const response = await axios.post('http://localhost:8081/api/v1/vuelos', formData, config);
-        setFlights([...flights, response.data]);
-        setSuccess('Flight added successfully');
+        await axios.post('http://localhost:8081/api/v1/vuelos', formData, config);
+        setSuccess('Flight created successfully');
       }
+      const response = await axios.get('http://localhost:8081/api/v1/vuelos', config);
+      setFlights(response.data);
+      setFormData({
+        id: '',
+        origen: '',
+        destino: '',
+        fechaDeSalida: '',
+        horaDeSalida: '',
+        duracion: '',
+        capacidad: '',
+        aerolineaId: '',
+        aeropuertoId: '',
+      });
     } catch (error) {
-      setError('Error adding/updating flight');
-    }
-  };
-
-  const handleDelete = async (flightId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: { Authorization: `Bearer ${token}` }
-      };
-      await axios.delete(`http://localhost:8081/api/v1/vuelos/${flightId}`, config);
-      setFlights(flights.filter((flight) => flight.id !== flightId));
-      setSuccess('Flight deleted successfully');
-    } catch (error) {
-      setError('Error deleting flight');
+      setError('Error saving flight');
     }
   };
 
@@ -81,107 +87,173 @@ const AdminFlights = () => {
     setFormData(flight);
   };
 
+  const handleDelete = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: { Authorization: Bearer ${token} }
+      };
+      await axios.delete(http://localhost:8081/api/v1/vuelos/${id}, config);
+      setFlights(flights.filter((flight) => flight.id !== id));
+      setSuccess('Flight deleted successfully');
+    } catch (error) {
+      setError('Error deleting flight');
+    }
+  };
+
   return (
     <Card>
       <Card.Body>
-        <Card.Title>Opciones de Vuelos</Card.Title>
+        <Card.Title>Manage Flights</Card.Title>
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
+        <Form onSubmit={handleSubmit}>
+          <Form.Group controlId="formOrigen" className="mb-3">
+            <Form.Label>Origen</Form.Label>
+            <Form.Control
+              type="text"
+              name="origen"
+              placeholder="Enter origin"
+              value={formData.origen}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group controlId="formDestino" className="mb-3">
+            <Form.Label>Destino</Form.Label>
+            <Form.Control
+              type="text"
+              name="destino"
+              placeholder="Enter destination"
+              value={formData.destino}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group controlId="formFechaDeSalida" className="mb-3">
+            <Form.Label>Fecha de Salida</Form.Label>
+            <Form.Control
+              type="date"
+              name="fechaDeSalida"
+              value={formData.fechaDeSalida}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group controlId="formHoraDeSalida" className="mb-3">
+            <Form.Label>Hora de Salida</Form.Label>
+            <Form.Control
+              type="time"
+              name="horaDeSalida"
+              value={formData.horaDeSalida}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group controlId="formDuracion" className="mb-3">
+            <Form.Label>Duración (minutos)</Form.Label>
+            <Form.Control
+              type="number"
+              name="duracion"
+              placeholder="Enter duration"
+              value={formData.duracion}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group controlId="formCapacidad" className="mb-3">
+            <Form.Label>Capacidad</Form.Label>
+            <Form.Control
+              type="number"
+              name="capacidad"
+              placeholder="Enter capacity"
+              value={formData.capacidad}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group controlId="formAerolinea" className="mb-3">
+            <Form.Label>Aerolinea</Form.Label>
+            <Form.Control
+              as="select"
+              name="aerolineaId"
+              value={formData.aerolineaId}
+              onChange={handleInputChange}
+            >
+              <option value="">Select Aerolinea</option>
+              {aerolineas.map((aerolinea) => (
+                <option key={aerolinea.idAerolinea} value={aerolinea.idAerolinea}>
+                  {aerolinea.nombre}
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+          <Form.Group controlId="formAeropuerto" className="mb-3">
+            <Form.Label>Aeropuerto</Form.Label>
+            <Form.Control
+              as="select"
+              name="aeropuertoId"
+              value={formData.aeropuertoId}
+              onChange={handleInputChange}
+            >
+              <option value="">Select Aeropuerto</option>
+              {aeropuertos.map((aeropuerto) => (
+                <option key={aeropuerto.idAeropuerto} value={aeropuerto.idAeropuerto}>
+                  {aeropuerto.nombre}
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+          <Button variant="primary" type="submit">
+            {formData.id ? 'Update Flight' : 'Create Flight'}
+          </Button>
+          <Button variant="secondary" className="ms-2" onClick={() => setFormData({
+            id: '',
+            origen: '',
+            destino: '',
+            fechaDeSalida: '',
+            horaDeSalida: '',
+            duracion: '',
+            capacidad: '',
+            aerolineaId: '',
+            aeropuertoId: '',
+          })}>
+            Clear
+          </Button>
+        </Form>
         <Table striped bordered hover className="mt-3">
           <thead>
             <tr>
+              <th>ID</th>
+              <th>Origen</th>
               <th>Destino</th>
-              <th>Fecha</th>
-              <th>Precio</th>
-              <th>Aerolínea</th>
+              <th>Fecha de Salida</th>
+              <th>Hora de Salida</th>
+              <th>Duración</th>
+              <th>Capacidad</th>
+              <th>Aerolinea</th>
               <th>Aeropuerto</th>
-              <th>Acciones</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {flights.map((flight) => (
               <tr key={flight.id}>
-                <td>{flight.destination}</td>
-                <td>{flight.date}</td>
-                <td>{flight.price}</td>
-                <td>{flight.airline}</td>
-                <td>{flight.airport}</td>
+                <td>{flight.id}</td>
+                <td>{flight.origen}</td>
+                <td>{flight.destino}</td>
+                <td>{flight.fechaDeSalida}</td>
+                <td>{flight.horaDeSalida}</td>
+                <td>{flight.duracion}</td>
+                <td>{flight.capacidad}</td>
+                <td>{aerolineas.find(a => a.idAerolinea === flight.aerolineaId)?.nombre}</td>
+                <td>{aeropuertos.find(a => a.idAeropuerto === flight.aeropuertoId)?.nombre}</td>
                 <td>
                   <Button variant="warning" onClick={() => handleEdit(flight)}>
-                    Editar
+                    Edit
                   </Button>
                   <Button variant="danger" onClick={() => handleDelete(flight.id)}>
-                    Eliminar
+                    Delete
                   </Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
-        <Form onSubmit={handleSubmit} className="mt-3">
-          <Form.Group controlId="formDestination" className="mb-3">
-            <Form.Label>Destino</Form.Label>
-            <Form.Control
-              type="text"
-              name="destination"
-              placeholder="Ingrese el destino"
-              value={formData.destination}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="formDate" className="mb-3">
-            <Form.Label>Fecha</Form.Label>
-            <Form.Control
-              type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="formPrice" className="mb-3">
-            <Form.Label>Precio</Form.Label>
-            <Form.Control
-              type="text"
-              name="price"
-              placeholder="Ingrese el precio"
-              value={formData.price}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="formAirline" className="mb-3">
-            <Form.Label>Aerolínea</Form.Label>
-            <Form.Control
-              type="text"
-              name="airline"
-              placeholder="Ingrese la aerolínea"
-              value={formData.airline}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="formAirport" className="mb-3">
-            <Form.Label>Aeropuerto</Form.Label>
-            <Form.Control
-              type="text"
-              name="airport"
-              placeholder="Ingrese el aeropuerto"
-              value={formData.airport}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Button variant="primary" type="submit">
-            {formData.id ? 'Actualizar Vuelo' : 'Agregar Vuelo'}
-          </Button>
-          <Button variant="secondary" className="ms-2" onClick={() => setFormData({
-            id: '',
-            destination: '',
-            date: '',
-            price: '',
-            airline: '',
-            airport: '',
-          })}>
-            Limpiar
-          </Button>
-        </Form>
       </Card.Body>
     </Card>
   );

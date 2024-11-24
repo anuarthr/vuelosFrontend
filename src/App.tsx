@@ -10,8 +10,14 @@ import './assets/styles/style.css';
 import Profile from './components/profilePage';
 import Reservas from './components/reservationsPage';
 import FlightsPage from './components/flightsPage';
+import AdminFlights from './components/adminflights';
+import AdminReservations from './components/adminreservations';
+import AdminAirlines from './components/adminairlines';
+import AdminClients from './components/adminclients';
+import { Navigate } from 'react-router-dom';
 
 const App = () => {
+
   return (
     <div id="root">
       <Header />
@@ -23,6 +29,11 @@ const App = () => {
         <Route path= "/profile" element={<Profile />}/>
         <Route path= "/reservations" element={<Reservas />}/>
         <Route path= "/flights" element={<FlightsPage />}/>
+        <Route path="/admin/flights" element={<AdminFlights />}/>
+        <Route path="/admin/reservations" element={<AdminReservations />}/>
+        <Route path="/admin/airlines" element={<AdminAirlines />}/>
+        <Route path="/admin/clients" element={<AdminClients />}/>
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
       <Footer />
     </div>

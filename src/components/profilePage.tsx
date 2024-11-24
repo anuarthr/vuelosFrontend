@@ -6,7 +6,6 @@ import { useAuth } from '../contexts/authcontext';
 const Profile = () => {
   const { user, login, logout } = useAuth();
   const [profileData, setProfileData] = useState({
-    username: user?.username || '',
     nombre: user?.nombre || '',
     apellido: user?.apellido || '',
     direccion: user?.direccion || '',
@@ -30,9 +29,9 @@ const Profile = () => {
     setSuccess('');
     try {
       const userResponse = await axios.put(http://localhost:8081/api/v1/users/${user.id}, {
-        username: profileData.username,
+        username: user.username,
         email: profileData.email,
-        password: user.password, // Assuming password is not being changed here
+        password: user.password,
       }, {
         headers: { Authorization: Bearer ${localStorage.getItem('token')} },
       });
@@ -79,16 +78,6 @@ const Profile = () => {
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
       <Form onSubmit={handleProfileSubmit}>
-        <Form.Group controlId="formUsername" className="mb-3">
-          <Form.Label>Username</Form.Label>
-          <Form.Control
-            type="text"
-            name="username"
-            placeholder="Ingrese su nombre de usuario"
-            value={profileData.username}
-            onChange={handleProfileInputChange}
-          />
-        </Form.Group>
         <Form.Group controlId="formNombre" className="mb-3">
           <Form.Label>Nombre</Form.Label>
           <Form.Control

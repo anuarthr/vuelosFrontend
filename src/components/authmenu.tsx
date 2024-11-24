@@ -9,7 +9,6 @@ const AuthMenu = () => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
-    adminCode: '', // Campo adicional para el código de administrador
     nombre: '',
     apellido: '',
     direccion: '',
@@ -34,9 +33,10 @@ const AuthMenu = () => {
     if (isLogin) {
       try {
         await login({ username: formData.username, password: formData.password });
-        if (formData.adminCode === 'ADMIN123') { // Verificar el código de administrador
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        if (userData.username === 'admin') {
           navigate('/admin');
-        } else {
+        } else{
           navigate('/dashboard');
         }
       } catch (error) {
@@ -138,18 +138,6 @@ const AuthMenu = () => {
             onChange={handleInputChange}
           />
         </Form.Group>
-        {isLogin && (
-          <Form.Group controlId="formAdminCode" className="mb-3">
-            <Form.Label>Código de Administrador</Form.Label>
-            <Form.Control
-              type="text"
-              name="adminCode"
-              placeholder="Ingrese el código de administrador"
-              value={formData.adminCode}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-        )}
         <Button variant="primary" type="submit" className="w-100 mt-3">
           {isLogin ? 'Iniciar Sesión' : 'Registrarse'}
         </Button>

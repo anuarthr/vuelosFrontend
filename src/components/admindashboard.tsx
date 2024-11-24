@@ -37,9 +37,13 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const flightsResponse = await axios.get('http://localhost:8081/api/v1/vuelos');
-        const reservationsResponse = await axios.get('http://localhost:8081/api/v1/reservas');
-        const airlinesResponse = await axios.get('http://localhost:8081/api/v1/aerolineas');
+        const token = localStorage.getItem('token');
+        const config = {
+          headers: { Authorization: Bearer ${token} }
+        };
+        const flightsResponse = await axios.get('http://localhost:8081/api/v1/vuelos', config);
+        const reservationsResponse = await axios.get('http://localhost:8081/api/v1/reservas', config);
+        const airlinesResponse = await axios.get('http://localhost:8081/api/v1/aerolineas', config);
         setFlights(flightsResponse.data);
         setReservations(reservationsResponse.data);
         setAirlines(airlinesResponse.data);
@@ -80,12 +84,16 @@ const AdminDashboard = () => {
     setError('');
     setSuccess('');
     try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: { Authorization: Bearer ${token} }
+      };
       if (formData.id) {
-        await axios.put(`http://localhost:8081/api/v1/vuelos/${formData.id}`, formData);
+        await axios.put(http://localhost:8081/api/v1/vuelos/${formData.id}, formData, config);
         setFlights(flights.map((flight) => (flight.id === formData.id ? formData : flight)));
         setSuccess('Flight updated successfully');
       } else {
-        const response = await axios.post('http://localhost:8081/api/v1/vuelos', formData);
+        const response = await axios.post('http://localhost:8081/api/v1/vuelos', formData, config);
         setFlights([...flights, response.data]);
         setSuccess('Flight added successfully');
       }
@@ -99,12 +107,16 @@ const AdminDashboard = () => {
     setError('');
     setSuccess('');
     try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: { Authorization: Bearer ${token} }
+      };
       if (reservationData.id) {
-        await axios.put(`http://localhost:8081/api/v1/reservas/${reservationData.id}`, reservationData);
+        await axios.put(http://localhost:8081/api/v1/reservas/${reservationData.id}, reservationData, config);
         setReservations(reservations.map((reservation) => (reservation.id === reservationData.id ? reservationData : reservation)));
         setSuccess('Reservation updated successfully');
       } else {
-        const response = await axios.post('http://localhost:8081/api/v1/reservas', reservationData);
+        const response = await axios.post('http://localhost:8081/api/v1/reservas', reservationData, config);
         setReservations([...reservations, response.data]);
         setSuccess('Reservation added successfully');
       }
@@ -118,12 +130,16 @@ const AdminDashboard = () => {
     setError('');
     setSuccess('');
     try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: { Authorization: Bearer ${token} }
+      };
       if (airlineData.idAerolinea) {
-        await axios.put(`http://localhost:8081/api/v1/aerolineas/${airlineData.idAerolinea}`, airlineData);
+        await axios.put(http://localhost:8081/api/v1/aerolineas/${airlineData.idAerolinea}, airlineData, config);
         setAirlines(airlines.map((airline) => (airline.idAerolinea === airlineData.idAerolinea ? airlineData : airline)));
         setSuccess('Airline updated successfully');
       } else {
-        const response = await axios.post('http://localhost:8081/api/v1/aerolineas', airlineData);
+        const response = await axios.post('http://localhost:8081/api/v1/aerolineas', airlineData, config);
         setAirlines([...airlines, response.data]);
         setSuccess('Airline added successfully');
       }
@@ -134,7 +150,11 @@ const AdminDashboard = () => {
 
   const handleDeleteFlight = async (flightId) => {
     try {
-      await axios.delete(`http://localhost:8081/api/v1/vuelos/${flightId}`);
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: { Authorization: Bearer ${token} }
+      };
+      await axios.delete(http://localhost:8081/api/v1/vuelos/${flightId}, config);
       setFlights(flights.filter((flight) => flight.id !== flightId));
       setSuccess('Flight deleted successfully');
     } catch (error) {
@@ -144,7 +164,11 @@ const AdminDashboard = () => {
 
   const handleDeleteReservation = async (reservationId) => {
     try {
-      await axios.delete(`http://localhost:8081/api/v1/reservas/${reservationId}`);
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: { Authorization: Bearer ${token} }
+      };
+      await axios.delete(http://localhost:8081/api/v1/reservas/${reservationId}, config);
       setReservations(reservations.filter((reservation) => reservation.id !== reservationId));
       setSuccess('Reservation deleted successfully');
     } catch (error) {
@@ -154,7 +178,11 @@ const AdminDashboard = () => {
 
   const handleDeleteAirline = async (airlineId) => {
     try {
-      await axios.delete(`http://localhost:8081/api/v1/aerolineas/${airlineId}`);
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: { Authorization: Bearer ${token} }
+      };
+      await axios.delete(http://localhost:8081/api/v1/aerolineas/${airlineId}, config);
       setAirlines(airlines.filter((airline) => airline.idAerolinea !== airlineId));
       setSuccess('Airline deleted successfully');
     } catch (error) {

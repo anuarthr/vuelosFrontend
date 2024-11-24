@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/authcontext';
 const Profile = () => {
   const { user, login, logout } = useAuth();
   const [profileData, setProfileData] = useState({
+    username: user?.username || '',
     nombre: user?.nombre || '',
     apellido: user?.apellido || '',
     direccion: user?.direccion || '',
@@ -28,22 +29,22 @@ const Profile = () => {
     setError('');
     setSuccess('');
     try {
-      const userResponse = await axios.put(`http://localhost:8081/api/v1/users/${user.id}`, {
-        username: user.username,
+      const userResponse = await axios.put(http://localhost:8081/api/v1/users/${user.id}, {
+        username: profileData.username,
         email: profileData.email,
         password: user.password, // Assuming password is not being changed here
       }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: Bearer ${localStorage.getItem('token')} },
       });
 
-      const clienteResponse = await axios.put(`http://localhost:8081/api/v1/clientes/${user.id}`, {
+      const clienteResponse = await axios.put(http://localhost:8081/api/v1/clientes/${user.id}, {
         nombre: profileData.nombre,
         apellido: profileData.apellido,
         direccion: profileData.direccion,
         telefono: profileData.telefono,
         email: profileData.email,
       }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: Bearer ${localStorage.getItem('token')} },
       });
 
       login({ ...userResponse.data, ...clienteResponse.data });
@@ -58,11 +59,11 @@ const Profile = () => {
     setError('');
     setSuccess('');
     try {
-      await axios.delete(`http://localhost:8081/api/v1/users/${user.id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      await axios.delete(http://localhost:8081/api/v1/users/${user.id}, {
+        headers: { Authorization: Bearer ${localStorage.getItem('token')} },
       });
-      await axios.delete(`http://localhost:8081/api/v1/clientes/${user.id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      await axios.delete(http://localhost:8081/api/v1/clientes/${user.id}, {
+        headers: { Authorization: Bearer ${localStorage.getItem('token')} },
       });
       logout();
       setSuccess('Perfil eliminado exitosamente');
@@ -78,6 +79,16 @@ const Profile = () => {
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
       <Form onSubmit={handleProfileSubmit}>
+        <Form.Group controlId="formUsername" className="mb-3">
+          <Form.Label>Username</Form.Label>
+          <Form.Control
+            type="text"
+            name="username"
+            placeholder="Ingrese su nombre de usuario"
+            value={profileData.username}
+            onChange={handleProfileInputChange}
+          />
+        </Form.Group>
         <Form.Group controlId="formNombre" className="mb-3">
           <Form.Label>Nombre</Form.Label>
           <Form.Control

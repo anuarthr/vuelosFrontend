@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Table, Alert, Card } from 'react-bootstrap';
 import axios from 'axios';
+import bcrypt from 'bcryptjs'; // Importar bcrypt para encriptar la contraseña
 
 const AdminClients = () => {
   const [clients, setClients] = useState([]);
   const [clientData, setClientData] = useState({
-    id: '',
+    idCliente: '',
     nombre: '',
     apellido: '',
     email: '',
     direccion: '',
     telefono: '',
+    password: '',
+    username: '', // Añadir el campo username
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -19,6 +22,7 @@ const AdminClients = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
+        console.log('Token:', token); // Añadir este log para verificar el token
         const config = {
           headers: { Authorization: `Bearer ${token}` }
         };
@@ -44,37 +48,80 @@ const AdminClients = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    console.log('Submitting client data:', clientData);
     try {
       const token = localStorage.getItem('token');
       const config = {
         headers: { Authorization: `Bearer ${token}` }
       };
-      if (clientData.id) {
-        await axios.put(`http://localhost:8081/api/v1/clientes/${clientData.id}`, clientData, config);
-        setClients(clients.map((client) => (client.id === clientData.id ? clientData : client)));
+      const hashedPassword = await bcrypt.hash(clientData.password, 10); // Encriptar la contraseña
+      if (clientData.idCliente) {
+        console.log('Updating client with ID:', clientData.idCliente);
+        await axios.put(`http://localhost:8081/api/v1/clientes/${clientData.idCliente}`, {
+          ...clientData,
+          password: hashedPassword, // Usar la contraseña encriptada
+        }, config);
+        await axios.put(`http://localhost:8081/api/v1/users/${clientData.idCliente}`, {
+          email: clientData.email,
+          password: hashedPassword, // Usar la contraseña encriptada
+          username: clientData.username, // Añadir el campo username
+        }, config);
+        setClients(clients.map((client) => (client.idCliente === clientData.idCliente ? { ...clientData, password: hashedPassword } : client)));
         setSuccess('Client updated successfully');
+      } else {
+        console.log('Client ID is missing');
       }
     } catch (error) {
+      console.error('Error updating client:', error);
       setError('Error updating client');
     }
   };
 
   const handleDeleteClient = async (clientId) => {
+    if (!clientId) {
+      console.error('Client ID is missing');
+      setError('Client ID is missing');
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
       const config = {
         headers: { Authorization: `Bearer ${token}` }
       };
+      console.log('Deleting client with ID:', clientId);
       await axios.delete(`http://localhost:8081/api/v1/clientes/${clientId}`, config);
-      setClients(clients.filter((client) => client.id !== clientId));
+      await axios.delete(`http://localhost:8081/api/v1/users/${clientId}`, config);
+      setClients(clients.filter((client) => client.idCliente !== clientId));
       setSuccess('Client deleted successfully');
     } catch (error) {
+      console.error('Error deleting client:', error);
       setError('Error deleting client');
     }
   };
 
-  const handleEditClient = (client) => {
-    setClientData(client);
+  const handleEditClient = async (client) => {
+    console.log('Editing client:', client);
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+      const userResponse = await axios.get(`http://localhost:8081/api/v1/users/${client.idCliente}`, config);
+      const userData = userResponse.data;
+      setClientData({
+        idCliente: client.idCliente,
+        nombre: client.nombre,
+        apellido: client.apellido,
+        email: client.email,
+        direccion: client.direccion,
+        telefono: client.telefono,
+        password: client.password,
+        username: userData.username, // Obtener el campo username del usuario
+      });
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      setError('Error fetching user data');
+    }
   };
 
   return (
@@ -86,6 +133,7 @@ const AdminClients = () => {
         <Table striped bordered hover className="mt-3">
           <thead>
             <tr>
+              <th>ID</th>
               <th>Nombre</th>
               <th>Apellido</th>
               <th>Email</th>
@@ -96,7 +144,8 @@ const AdminClients = () => {
           </thead>
           <tbody>
             {clients.map((client) => (
-              <tr key={client.id}>
+              <tr key={client.idCliente || client.email}>
+                <td>{client.idCliente}</td>
                 <td>{client.nombre}</td>
                 <td>{client.apellido}</td>
                 <td>{client.email}</td>
@@ -106,7 +155,7 @@ const AdminClients = () => {
                   <Button variant="warning" onClick={() => handleEditClient(client)}>
                     Editar
                   </Button>
-                  <Button variant="danger" onClick={() => handleDeleteClient(client.id)}>
+                  <Button variant="danger" onClick={() => handleDeleteClient(client.idCliente)}>
                     Eliminar
                   </Button>
                 </td>
@@ -165,16 +214,38 @@ const AdminClients = () => {
               onChange={handleInputChange}
             />
           </Form.Group>
+          <Form.Group controlId="formPassword" className="mb-3">
+            <Form.Label>Contraseña</Form.Label>
+            <Form.Control
+              type="password"
+              name="password"
+              placeholder="Ingrese la contraseña"
+              value={clientData.password}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group controlId="formUsername" className="mb-3">
+            <Form.Label>Nombre de Usuario</Form.Label>
+            <Form.Control
+              type="text"
+              name="username"
+              placeholder="Ingrese el nombre de usuario"
+              value={clientData.username}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
           <Button variant="primary" type="submit">
-            {clientData.id ? 'Actualizar Cliente' : 'Agregar Cliente'}
+            Modificar Cliente
           </Button>
           <Button variant="secondary" className="ms-2" onClick={() => setClientData({
-            id: '',
+            idCliente: '',
             nombre: '',
             apellido: '',
             email: '',
             direccion: '',
             telefono: '',
+            password: '',
+            username: '', // Añadir el campo username
           })}>
             Limpiar
           </Button>

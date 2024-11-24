@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Row, Col, Table, Alert, Card } from 'react-bootstrap';
 import axios from 'axios';
+import { useAuth } from '../contexts/authcontext';
 
 const AdminDashboard = () => {
+  const { user } = useAuth();
   const [flights, setFlights] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [airlines, setAirlines] = useState([]);
@@ -35,8 +37,8 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const flightsResponse = await axios.get('http://localhost:8081/api/v1/flights');
-        const reservationsResponse = await axios.get('http://localhost:8081/api/v1/reservations');
+        const flightsResponse = await axios.get('http://localhost:8081/api/v1/vuelos');
+        const reservationsResponse = await axios.get('http://localhost:8081/api/v1/reservas');
         const airlinesResponse = await axios.get('http://localhost:8081/api/v1/aerolineas');
         setFlights(flightsResponse.data);
         setReservations(reservationsResponse.data);
@@ -79,11 +81,11 @@ const AdminDashboard = () => {
     setSuccess('');
     try {
       if (formData.id) {
-        await axios.put(http://localhost:8081/api/v1/flights/${formData.id}, formData);
+        await axios.put(`http://localhost:8081/api/v1/vuelos/${formData.id}`, formData);
         setFlights(flights.map((flight) => (flight.id === formData.id ? formData : flight)));
         setSuccess('Flight updated successfully');
       } else {
-        const response = await axios.post('http://localhost:8081/api/v1/flights', formData);
+        const response = await axios.post('http://localhost:8081/api/v1/vuelos', formData);
         setFlights([...flights, response.data]);
         setSuccess('Flight added successfully');
       }
@@ -98,11 +100,11 @@ const AdminDashboard = () => {
     setSuccess('');
     try {
       if (reservationData.id) {
-        await axios.put(http://localhost:8081/api/v1/reservations/${reservationData.id}, reservationData);
+        await axios.put(`http://localhost:8081/api/v1/reservas/${reservationData.id}`, reservationData);
         setReservations(reservations.map((reservation) => (reservation.id === reservationData.id ? reservationData : reservation)));
         setSuccess('Reservation updated successfully');
       } else {
-        const response = await axios.post('http://localhost:8081/api/v1/reservations', reservationData);
+        const response = await axios.post('http://localhost:8081/api/v1/reservas', reservationData);
         setReservations([...reservations, response.data]);
         setSuccess('Reservation added successfully');
       }
@@ -117,7 +119,7 @@ const AdminDashboard = () => {
     setSuccess('');
     try {
       if (airlineData.idAerolinea) {
-        await axios.put(http://localhost:8081/api/v1/aerolineas/${airlineData.idAerolinea}, airlineData);
+        await axios.put(`http://localhost:8081/api/v1/aerolineas/${airlineData.idAerolinea}`, airlineData);
         setAirlines(airlines.map((airline) => (airline.idAerolinea === airlineData.idAerolinea ? airlineData : airline)));
         setSuccess('Airline updated successfully');
       } else {
@@ -132,7 +134,7 @@ const AdminDashboard = () => {
 
   const handleDeleteFlight = async (flightId) => {
     try {
-      await axios.delete(http://localhost:8081/api/v1/flights/${flightId});
+      await axios.delete(`http://localhost:8081/api/v1/vuelos/${flightId}`);
       setFlights(flights.filter((flight) => flight.id !== flightId));
       setSuccess('Flight deleted successfully');
     } catch (error) {
@@ -142,7 +144,7 @@ const AdminDashboard = () => {
 
   const handleDeleteReservation = async (reservationId) => {
     try {
-      await axios.delete(http://localhost:8081/api/v1/reservations/${reservationId});
+      await axios.delete(`http://localhost:8081/api/v1/reservas/${reservationId}`);
       setReservations(reservations.filter((reservation) => reservation.id !== reservationId));
       setSuccess('Reservation deleted successfully');
     } catch (error) {
@@ -152,7 +154,7 @@ const AdminDashboard = () => {
 
   const handleDeleteAirline = async (airlineId) => {
     try {
-      await axios.delete(http://localhost:8081/api/v1/aerolineas/${airlineId});
+      await axios.delete(`http://localhost:8081/api/v1/aerolineas/${airlineId}`);
       setAirlines(airlines.filter((airline) => airline.idAerolinea !== airlineId));
       setSuccess('Airline deleted successfully');
     } catch (error) {

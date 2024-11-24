@@ -9,6 +9,7 @@ const AuthMenu = () => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
+    adminCode: '', // Campo adicional para el código de administrador
     nombre: '',
     apellido: '',
     direccion: '',
@@ -32,18 +33,14 @@ const AuthMenu = () => {
     setError('');
     if (isLogin) {
       try {
-        const response = await axios.post('http://localhost:8081/api/v1/auth/login', {
-          username: formData.username,
-          password: formData.password,
-        });
-        const userData = response.data;
-        login(userData);
-        if (userData.roles.includes('ROLE_ADMIN')) {
+        await login({ username: formData.username, password: formData.password });
+        if (formData.adminCode === 'ADMIN123') { // Verificar el código de administrador
           navigate('/admin');
         } else {
           navigate('/dashboard');
         }
       } catch (error) {
+        console.error('Error during login:', error);
         setError('Invalid credentials');
       }
     } else {
@@ -51,6 +48,7 @@ const AuthMenu = () => {
         await axios.post('http://localhost:8081/api/v1/auth/signup', formData);
         setIsLogin(true);
       } catch (error) {
+        console.error('Error during signup:', error);
         setError('Error registering user');
       }
     }
@@ -62,7 +60,7 @@ const AuthMenu = () => {
   };
 
   return (
-    <div className="auth-menu" style={{width: '100%',maxWidth:'600px', margin: 'auto',padding: '15px',border: '1px solid #ddd',borderRadius: '8px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)'}}>
+    <div className="auth-menu" style={{ width: '100%', maxWidth: '600px', margin: 'auto', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}>
       <h2 style={{ fontWeight: 'bold' }}>{isLogin ? 'Iniciar Sesión' : 'Registrarse'}</h2>
       {error && <Alert variant="danger">{error}</Alert>}
       <Form onSubmit={handleSubmit}>
@@ -140,6 +138,18 @@ const AuthMenu = () => {
             onChange={handleInputChange}
           />
         </Form.Group>
+        {isLogin && (
+          <Form.Group controlId="formAdminCode" className="mb-3">
+            <Form.Label>Código de Administrador</Form.Label>
+            <Form.Control
+              type="text"
+              name="adminCode"
+              placeholder="Ingrese el código de administrador"
+              value={formData.adminCode}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+        )}
         <Button variant="primary" type="submit" className="w-100 mt-3">
           {isLogin ? 'Iniciar Sesión' : 'Registrarse'}
         </Button>

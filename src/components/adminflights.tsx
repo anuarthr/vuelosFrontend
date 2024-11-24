@@ -20,7 +20,7 @@ const AdminFlights = () => {
       try {
         const token = localStorage.getItem('token');
         const config = {
-          headers: { Authorization: Bearer ${token} }
+          headers: { Authorization: `Bearer ${token}` }
         };
         const response = await axios.get('http://localhost:8081/api/v1/vuelos', config);
         setFlights(response.data);
@@ -47,10 +47,10 @@ const AdminFlights = () => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: Bearer ${token} }
+        headers: { Authorization: `Bearer ${token}` }
       };
       if (formData.id) {
-        await axios.put(http://localhost:8081/api/v1/vuelos/${formData.id}, formData, config);
+        await axios.put(`http://localhost:8081/api/v1/vuelos/${formData.id}`, formData, config);
         setFlights(flights.map((flight) => (flight.id === formData.id ? formData : flight)));
         setSuccess('Flight updated successfully');
       } else {
@@ -67,9 +67,9 @@ const AdminFlights = () => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: Bearer ${token} }
+        headers: { Authorization: `Bearer ${token}` }
       };
-      await axios.delete(http://localhost:8081/api/v1/vuelos/${flightId}, config);
+      await axios.delete(`http://localhost:8081/api/v1/vuelos/${flightId}`, config);
       setFlights(flights.filter((flight) => flight.id !== flightId));
       setSuccess('Flight deleted successfully');
     } catch (error) {

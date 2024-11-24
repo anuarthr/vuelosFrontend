@@ -28,22 +28,22 @@ const Profile = () => {
     setError('');
     setSuccess('');
     try {
-      const userResponse = await axios.put(http://localhost:8081/api/v1/users/${user.id}, {
+      const userResponse = await axios.put(`http://localhost:8081/api/v1/users/${user.id}`, {
         username: user.username,
         email: profileData.email,
         password: user.password,
       }, {
-        headers: { Authorization: Bearer ${localStorage.getItem('token')} },
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 
-      const clienteResponse = await axios.put(http://localhost:8081/api/v1/clientes/${user.id}, {
+      const clienteResponse = await axios.put(`http://localhost:8081/api/v1/clientes/${user.id}`, {
         nombre: profileData.nombre,
         apellido: profileData.apellido,
         direccion: profileData.direccion,
         telefono: profileData.telefono,
         email: profileData.email,
       }, {
-        headers: { Authorization: Bearer ${localStorage.getItem('token')} },
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 
       login({ ...userResponse.data, ...clienteResponse.data });
@@ -58,11 +58,11 @@ const Profile = () => {
     setError('');
     setSuccess('');
     try {
-      await axios.delete(http://localhost:8081/api/v1/users/${user.id}, {
-        headers: { Authorization: Bearer ${localStorage.getItem('token')} },
+      await axios.delete(`http://localhost:8081/api/v1/users/${user.id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-      await axios.delete(http://localhost:8081/api/v1/clientes/${user.id}, {
-        headers: { Authorization: Bearer ${localStorage.getItem('token')} },
+      await axios.delete(`http://localhost:8081/api/v1/clientes/${user.id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       logout();
       setSuccess('Perfil eliminado exitosamente');

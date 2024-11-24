@@ -18,7 +18,7 @@ const AdminReservations = () => {
       try {
         const token = localStorage.getItem('token');
         const config = {
-          headers: { Authorization: Bearer ${token} }
+          headers: { Authorization: `Bearer ${token}` }
         };
         const response = await axios.get('http://localhost:8081/api/v1/reservas', config);
         setReservations(response.data);
@@ -45,10 +45,10 @@ const AdminReservations = () => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: Bearer ${token} }
+        headers: { Authorization: `Bearer ${token}` }
       };
       if (reservationData.id) {
-        await axios.put(http://localhost:8081/api/v1/reservas/${reservationData.id}, reservationData, config);
+        await axios.put(`http://localhost:8081/api/v1/reservas/${reservationData.id}`, reservationData, config);
         setReservations(reservations.map((reservation) => (reservation.id === reservationData.id ? reservationData : reservation)));
         setSuccess('Reservation updated successfully');
       } else {
@@ -65,9 +65,9 @@ const AdminReservations = () => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: Bearer ${token} }
+        headers: { Authorization: `Bearer ${token}` }
       };
-      await axios.delete(http://localhost:8081/api/v1/reservas/${reservationId}, config);
+      await axios.delete(`http://localhost:8081/api/v1/reservas/${reservationId}`, config);
       setReservations(reservations.filter((reservation) => reservation.id !== reservationId));
       setSuccess('Reservation deleted successfully');
     } catch (error) {

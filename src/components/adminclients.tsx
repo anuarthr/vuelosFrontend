@@ -20,7 +20,7 @@ const AdminClients = () => {
       try {
         const token = localStorage.getItem('token');
         const config = {
-          headers: { Authorization: Bearer ${token} }
+          headers: { Authorization: `Bearer ${token}` }
         };
         const clientsResponse = await axios.get('http://localhost:8081/api/v1/clientes', config);
         setClients(clientsResponse.data);
@@ -47,10 +47,10 @@ const AdminClients = () => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: Bearer ${token} }
+        headers: { Authorization: `Bearer ${token}` }
       };
       if (clientData.id) {
-        await axios.put(http://localhost:8081/api/v1/clientes/${clientData.id}, clientData, config);
+        await axios.put(`http://localhost:8081/api/v1/clientes/${clientData.id}`, clientData, config);
         setClients(clients.map((client) => (client.id === clientData.id ? clientData : client)));
         setSuccess('Client updated successfully');
       }
@@ -63,9 +63,9 @@ const AdminClients = () => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: Bearer ${token} }
+        headers: { Authorization: `Bearer ${token}` }
       };
-      await axios.delete(http://localhost:8081/api/v1/clientes/${clientId}, config);
+      await axios.delete(`http://localhost:8081/api/v1/clientes/${clientId}`, config);
       setClients(clients.filter((client) => client.id !== clientId));
       setSuccess('Client deleted successfully');
     } catch (error) {

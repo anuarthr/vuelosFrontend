@@ -18,7 +18,7 @@ const AdminAirlines = () => {
       try {
         const token = localStorage.getItem('token');
         const config = {
-          headers: { Authorization: Bearer ${token} }
+          headers: { Authorization: `Bearer ${token}` }
         };
         const response = await axios.get('http://localhost:8081/api/v1/aerolineas', config);
         setAirlines(response.data);
@@ -45,10 +45,10 @@ const AdminAirlines = () => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: Bearer ${token} }
+        headers: { Authorization: `Bearer ${token}` }
       };
       if (airlineData.idAerolinea) {
-        await axios.put(http://localhost:8081/api/v1/aerolineas/${airlineData.idAerolinea}, airlineData, config);
+        await axios.put(`http://localhost:8081/api/v1/aerolineas/${airlineData.idAerolinea}`, airlineData, config);
         setAirlines(airlines.map((airline) => (airline.idAerolinea === airlineData.idAerolinea ? airlineData : airline)));
         setSuccess('Airline updated successfully');
       } else {
@@ -65,9 +65,9 @@ const AdminAirlines = () => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: Bearer ${token} }
+        headers: { Authorization: `Bearer ${token}` }
       };
-      await axios.delete(http://localhost:8081/api/v1/aerolineas/${airlineId}, config);
+      await axios.delete(`http://localhost:8081/api/v1/aerolineas/${airlineId}`, config);
       setAirlines(airlines.filter((airline) => airline.idAerolinea !== airlineId));
       setSuccess('Airline deleted successfully');
     } catch (error) {

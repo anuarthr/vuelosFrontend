@@ -36,7 +36,7 @@ const AuthMenu = () => {
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         if (userData.username === 'admin') {
           navigate('/admin');
-        } else{
+        } else {
           navigate('/dashboard');
         }
       } catch (error) {

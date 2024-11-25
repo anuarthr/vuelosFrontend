@@ -7,7 +7,7 @@ const AdminFlights = () => {
   const [aerolineas, setAerolineas] = useState([]);
   const [aeropuertos, setAeropuertos] = useState([]);
   const [formData, setFormData] = useState({
-    id: '',
+    idVuelo: '',
     origen: '',
     destino: '',
     fechaDeSalida: '',
@@ -25,7 +25,7 @@ const AdminFlights = () => {
       try {
         const token = localStorage.getItem('token');
         const config = {
-          headers: { Authorization: Bearer ${token} }
+          headers: { Authorization: `Bearer ${token}` }
         };
         const flightsResponse = await axios.get('http://localhost:8081/api/v1/vuelos', config);
         setFlights(flightsResponse.data);
@@ -56,19 +56,20 @@ const AdminFlights = () => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: Bearer ${token} }
+        headers: { Authorization: `Bearer ${token}` }
       };
-      if (formData.id) {
-        await axios.put(http://localhost:8081/api/v1/vuelos/${formData.id}, formData, config);
+      if (formData.idVuelo) {
+        await axios.put(`http://localhost:8081/api/v1/vuelos/${formData.idVuelo}`, formData, config);
         setSuccess('Flight updated successfully');
+        const response = await axios.get('http://localhost:8081/api/v1/vuelos', config);
+        setFlights(response.data);
       } else {
-        await axios.post('http://localhost:8081/api/v1/vuelos', formData, config);
+        const response = await axios.post('http://localhost:8081/api/v1/vuelos', formData, config);
         setSuccess('Flight created successfully');
+        setFlights([...flights, response.data]);
       }
-      const response = await axios.get('http://localhost:8081/api/v1/vuelos', config);
-      setFlights(response.data);
       setFormData({
-        id: '',
+        idVuelo: '',
         origen: '',
         destino: '',
         fechaDeSalida: '',
@@ -84,17 +85,27 @@ const AdminFlights = () => {
   };
 
   const handleEdit = (flight) => {
-    setFormData(flight);
+    setFormData({
+      idVuelo: flight.idVuelo,
+      origen: flight.origen,
+      destino: flight.destino,
+      fechaDeSalida: flight.fechaDeSalida,
+      horaDeSalida: flight.horaDeSalida,
+      duracion: flight.duracion,
+      capacidad: flight.capacidad,
+      aerolineaId: flight.aerolinea?.idAerolinea || '',
+      aeropuertoId: flight.aeropuerto?.idAeropuerto || '',
+    });
   };
 
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: Bearer ${token} }
+        headers: { Authorization: `Bearer ${token}` }
       };
-      await axios.delete(http://localhost:8081/api/v1/vuelos/${id}, config);
-      setFlights(flights.filter((flight) => flight.id !== id));
+      await axios.delete(`http://localhost:8081/api/v1/vuelos/${id}`, config);
+      setFlights(flights.filter((flight) => flight.idVuelo !== id));
       setSuccess('Flight deleted successfully');
     } catch (error) {
       setError('Error deleting flight');
@@ -199,10 +210,10 @@ const AdminFlights = () => {
             </Form.Control>
           </Form.Group>
           <Button variant="primary" type="submit">
-            {formData.id ? 'Update Flight' : 'Create Flight'}
+            {formData.idVuelo ? 'Update Flight' : 'Create Flight'}
           </Button>
           <Button variant="secondary" className="ms-2" onClick={() => setFormData({
-            id: '',
+            idVuelo: '',
             origen: '',
             destino: '',
             fechaDeSalida: '',
@@ -232,21 +243,21 @@ const AdminFlights = () => {
           </thead>
           <tbody>
             {flights.map((flight) => (
-              <tr key={flight.id}>
-                <td>{flight.id}</td>
+              <tr key={flight.idVuelo}>
+                <td>{flight.idVuelo}</td>
                 <td>{flight.origen}</td>
                 <td>{flight.destino}</td>
                 <td>{flight.fechaDeSalida}</td>
                 <td>{flight.horaDeSalida}</td>
                 <td>{flight.duracion}</td>
                 <td>{flight.capacidad}</td>
-                <td>{aerolineas.find(a => a.idAerolinea === flight.aerolineaId)?.nombre}</td>
-                <td>{aeropuertos.find(a => a.idAeropuerto === flight.aeropuertoId)?.nombre}</td>
+                <td>{aerolineas.find(a => a.idAerolinea === flight.aerolineaId)?.nombre || 'N/A'}</td>
+                <td>{aeropuertos.find(a => a.idAeropuerto === flight.aeropuertoId)?.nombre || 'N/A'}</td>
                 <td>
                   <Button variant="warning" onClick={() => handleEdit(flight)}>
                     Edit
                   </Button>
-                  <Button variant="danger" onClick={() => handleDelete(flight.id)}>
+                  <Button variant="danger" onClick={() => handleDelete(flight.idVuelo)}>
                     Delete
                   </Button>
                 </td>

@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const AdminAirlines = () => {
   const [airlines, setAirlines] = useState([]);
-  const [airlineData, setAirlineData] = useState({
+  const [formData, setFormData] = useState({
     idAerolinea: '',
     nombre: '',
     codigoAerolinea: '',
@@ -32,7 +32,7 @@ const AdminAirlines = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setAirlineData((prevData) => ({
+    setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
@@ -47,114 +47,121 @@ const AdminAirlines = () => {
       const config = {
         headers: { Authorization: `Bearer ${token}` }
       };
-      if (airlineData.idAerolinea) {
-        await axios.put(`http://localhost:8081/api/v1/aerolineas/${airlineData.idAerolinea}`, airlineData, config);
-        setAirlines(airlines.map((airline) => (airline.idAerolinea === airlineData.idAerolinea ? airlineData : airline)));
+      if (formData.idAerolinea) {
+        await axios.put(`http://localhost:8081/api/v1/aerolineas/${formData.idAerolinea}`, formData, config);
         setSuccess('Airline updated successfully');
       } else {
-        const response = await axios.post('http://localhost:8081/api/v1/aerolineas', airlineData, config);
+        const response = await axios.post('http://localhost:8081/api/v1/aerolineas', formData, config);
+        setSuccess('Airline created successfully');
         setAirlines([...airlines, response.data]);
-        setSuccess('Airline added successfully');
       }
+      setFormData({
+        idAerolinea: '',
+        nombre: '',
+        codigoAerolinea: '',
+        paisDeOrigen: '',
+      });
     } catch (error) {
-      setError('Error adding/updating airline');
+      setError('Error saving airline');
     }
   };
 
-  const handleDelete = async (airlineId) => {
+  const handleEdit = (airline) => {
+    setFormData(airline);
+  };
+
+  const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem('token');
       const config = {
         headers: { Authorization: `Bearer ${token}` }
       };
-      await axios.delete(`http://localhost:8081/api/v1/aerolineas/${airlineId}`, config);
-      setAirlines(airlines.filter((airline) => airline.idAerolinea !== airlineId));
+      await axios.delete(`http://localhost:8081/api/v1/aerolineas/${id}`, config);
+      setAirlines(airlines.filter((airline) => airline.idAerolinea !== id));
       setSuccess('Airline deleted successfully');
     } catch (error) {
       setError('Error deleting airline');
     }
   };
 
-  const handleEdit = (airline) => {
-    setAirlineData(airline);
-  };
-
   return (
     <Card>
       <Card.Body>
-        <Card.Title>Opciones de Aerolíneas</Card.Title>
+        <Card.Title>Manage Airlines</Card.Title>
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
+        <Form onSubmit={handleSubmit}>
+          <Form.Group controlId="formNombre" className="mb-3">
+            <Form.Label>Nombre</Form.Label>
+            <Form.Control
+              type="text"
+              name="nombre"
+              placeholder="Enter nombre"
+              value={formData.nombre}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group controlId="formCodigoAerolinea" className="mb-3">
+            <Form.Label>Codigo Aerolinea</Form.Label>
+            <Form.Control
+              type="text"
+              name="codigoAerolinea"
+              placeholder="Enter codigo aerolinea"
+              value={formData.codigoAerolinea}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group controlId="formPaisDeOrigen" className="mb-3">
+            <Form.Label>Pais de Origen</Form.Label>
+            <Form.Control
+              type="text"
+              name="paisDeOrigen"
+              placeholder="Enter pais de origen"
+              value={formData.paisDeOrigen}
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Button variant="primary" type="submit">
+            {formData.idAerolinea ? 'Update Airline' : 'Create Airline'}
+          </Button>
+          <Button variant="secondary" className="ms-2" onClick={() => setFormData({
+            idAerolinea: '',
+            nombre: '',
+            codigoAerolinea: '',
+            paisDeOrigen: '',
+          })}>
+            Clear
+          </Button>
+        </Form>
         <Table striped bordered hover className="mt-3">
           <thead>
             <tr>
+              <th>ID</th>
               <th>Nombre</th>
-              <th>Código</th>
-              <th>País de Origen</th>
-              <th>Acciones</th>
+              <th>Codigo Aerolinea</th>
+              <th>Pais de Origen</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {airlines.map((airline) => (
               <tr key={airline.idAerolinea}>
+                <td>{airline.idAerolinea}</td>
                 <td>{airline.nombre}</td>
                 <td>{airline.codigoAerolinea}</td>
                 <td>{airline.paisDeOrigen}</td>
                 <td>
                   <Button variant="warning" onClick={() => handleEdit(airline)}>
-                    Editar
+                    Edit
                   </Button>
                   <Button variant="danger" onClick={() => handleDelete(airline.idAerolinea)}>
-                    Eliminar
+                    Delete
                   </Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
-        <Form onSubmit={handleSubmit} className="mt-3">
-          <Form.Group controlId="formNombre" className="mb-3">
-            <Form.Label>Nombre</Form.Label>
-            <Form.Control
-              type="text"
-              name="nombre"
-              placeholder="Ingrese el nombre"
-              value={airlineData.nombre}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="formCodigoAerolinea" className="mb-3">
-            <Form.Label>Código de Aerolínea</Form.Label>
-            <Form.Control
-              type="text"
-              name="codigoAerolinea"
-              placeholder="Ingrese el código de aerolínea"
-              value={airlineData.codigoAerolinea}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="formPaisDeOrigen" className="mb-3">
-            <Form.Label>País de Origen</Form.Label>
-            <Form.Control
-              type="text"
-              name="paisDeOrigen"
-              placeholder="Ingrese el país de origen"
-              value={airlineData.paisDeOrigen}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Button variant="primary" type="submit">
-            {airlineData.idAerolinea ? 'Actualizar Aerolínea' : 'Agregar Aerolínea'}
-          </Button>
-          <Button variant="secondary" className="ms-2" onClick={() => setAirlineData({
-            idAerolinea: '',
-            nombre: '',
-            codigoAerolinea: '',
-            paisDeOrigen: '',
-          })}>
-            Limpiar
-          </Button>
-        </Form>
       </Card.Body>
     </Card>
   );

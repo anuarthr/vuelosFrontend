@@ -14,6 +14,7 @@ import AdminFlights from './components/adminflights';
 import AdminReservations from './components/adminreservations';
 import AdminAirlines from './components/adminairlines';
 import AdminClients from './components/adminclients';
+import AdminAirports from './components/adminairports';
 import { Navigate } from 'react-router-dom';
 
 const App = () => {
@@ -33,6 +34,7 @@ const App = () => {
         <Route path="/admin/reservations" element={<AdminReservations />}/>
         <Route path="/admin/airlines" element={<AdminAirlines />}/>
         <Route path="/admin/clients" element={<AdminClients />}/>
+        <Route path="/admin/airports" element={<AdminAirports />}/>
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
       <Footer />

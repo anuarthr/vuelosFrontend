@@ -3,9 +3,9 @@ import { Form, Button, Table, Alert, Card } from 'react-bootstrap';
 import axios from 'axios';
 
 const AdminAirports = () => {
-  const [aeropuertos, setAeropuertos] = useState([]);
+  const [airports, setAirports] = useState([]);
   const [formData, setFormData] = useState({
-    id: '',
+    idAeropuerto: '',
     nombre: '',
     ciudad: '',
     pais: '',
@@ -18,12 +18,12 @@ const AdminAirports = () => {
       try {
         const token = localStorage.getItem('token');
         const config = {
-          headers: { Authorization: Bearer ${token} }
+          headers: { Authorization: `Bearer ${token}` }
         };
         const response = await axios.get('http://localhost:8081/api/v1/aeropuertos', config);
-        setAeropuertos(response.data);
+        setAirports(response.data);
       } catch (error) {
-        setError('Error fetching aeropuertos');
+        setError('Error fetching airports');
       }
     };
 
@@ -45,50 +45,51 @@ const AdminAirports = () => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: Bearer ${token} }
+        headers: { Authorization: `Bearer ${token}` }
       };
-      if (formData.id) {
-        await axios.put(http://localhost:8081/api/v1/aeropuertos/${formData.id}, formData, config);
-        setSuccess('Aeropuerto updated successfully');
+      if (formData.idAeropuerto) {
+        await axios.put(`http://localhost:8081/api/v1/aeropuertos/${formData.idAeropuerto}`, formData, config);
+        setSuccess('Airport updated successfully');
+        const response = await axios.get('http://localhost:8081/api/v1/aeropuertos', config);
+        setAirports(response.data);
       } else {
-        await axios.post('http://localhost:8081/api/v1/aeropuertos', formData, config);
-        setSuccess('Aeropuerto created successfully');
+        const response = await axios.post('http://localhost:8081/api/v1/aeropuertos', formData, config);
+        setSuccess('Airport created successfully');
+        setAirports([...airports, response.data]);
       }
-      const response = await axios.get('http://localhost:8081/api/v1/aeropuertos', config);
-      setAeropuertos(response.data);
       setFormData({
-        id: '',
+        idAeropuerto: '',
         nombre: '',
         ciudad: '',
         pais: '',
       });
     } catch (error) {
-      setError('Error saving aeropuerto');
+      setError('Error saving airport');
     }
   };
 
-  const handleEdit = (aeropuerto) => {
-    setFormData(aeropuerto);
+  const handleEdit = (airport) => {
+    setFormData(airport);
   };
 
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem('token');
       const config = {
-        headers: { Authorization: Bearer ${token} }
+        headers: { Authorization: `Bearer ${token}` }
       };
-      await axios.delete(http://localhost:8081/api/v1/aeropuertos/${id}, config);
-      setAeropuertos(aeropuertos.filter((aeropuerto) => aeropuerto.id !== id));
-      setSuccess('Aeropuerto deleted successfully');
+      await axios.delete(`http://localhost:8081/api/v1/aeropuertos/${id}`, config);
+      setAirports(airports.filter((airport) => airport.idAeropuerto !== id));
+      setSuccess('Airport deleted successfully');
     } catch (error) {
-      setError('Error deleting aeropuerto');
+      setError('Error deleting airport');
     }
   };
 
   return (
     <Card>
       <Card.Body>
-        <Card.Title>Manage Aeropuertos</Card.Title>
+        <Card.Title>Manage Airports</Card.Title>
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
         <Form onSubmit={handleSubmit}>
@@ -123,10 +124,10 @@ const AdminAirports = () => {
             />
           </Form.Group>
           <Button variant="primary" type="submit">
-            {formData.id ? 'Update Aeropuerto' : 'Create Aeropuerto'}
+            {formData.idAeropuerto ? 'Update Airport' : 'Create Airport'}
           </Button>
           <Button variant="secondary" className="ms-2" onClick={() => setFormData({
-            id: '',
+            idAeropuerto: '',
             nombre: '',
             ciudad: '',
             pais: '',
@@ -145,17 +146,17 @@ const AdminAirports = () => {
             </tr>
           </thead>
           <tbody>
-            {aeropuertos.map((aeropuerto) => (
-              <tr key={aeropuerto.id}>
-                <td>{aeropuerto.id}</td>
-                <td>{aeropuerto.nombre}</td>
-                <td>{aeropuerto.ciudad}</td>
-                <td>{aeropuerto.pais}</td>
+            {airports.map((airport) => (
+              <tr key={airport.idAeropuerto}>
+                <td>{airport.idAeropuerto}</td>
+                <td>{airport.nombre}</td>
+                <td>{airport.ciudad}</td>
+                <td>{airport.pais}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleEdit(aeropuerto)}>
+                  <Button variant="warning" onClick={() => handleEdit(airport)}>
                     Edit
                   </Button>
-                  <Button variant="danger" onClick={() => handleDelete(aeropuerto.id)}>
+                  <Button variant="danger" onClick={() => handleDelete(airport.idAeropuerto)}>
                     Delete
                   </Button>
                 </td>

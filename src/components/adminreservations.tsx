@@ -1,36 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { Form, Button, Table, Alert, Card } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Button, Card, Form, Table, Alert } from 'react-bootstrap';
 import axios from 'axios';
+import { useAuth } from '../contexts/authcontext';
 
 const AdminReservations = () => {
-  const navigate = useNavigate();
+  const { token } = useAuth();
   const [reservations, setReservations] = useState([]);
   const [reservationData, setReservationData] = useState({
     id: '',
-    userId: '',
-    flightId: '',
     date: '',
+    numeroDePasajeros: 1, // Inicializar el número de pasajeros
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchReservations = async () => {
       try {
-        const token = localStorage.getItem('token');
         const config = {
           headers: { Authorization: `Bearer ${token}` }
         };
         const response = await axios.get('http://localhost:8081/api/v1/reservas', config);
         setReservations(response.data);
       } catch (error) {
-        setError('Error fetching reservations');
+        console.error('Error fetching reservations:', error);
+        setError('Error al obtener las reservas');
       }
     };
 
-    fetchData();
-  }, []);
+    fetchReservations();
+  }, [token]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -40,131 +39,124 @@ const AdminReservations = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleReservationSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
     try {
-      const token = localStorage.getItem('token');
       const config = {
         headers: { Authorization: `Bearer ${token}` }
       };
       if (reservationData.id) {
-        await axios.put(`http://localhost:8081/api/v1/reservas/${reservationData.id}`, reservationData, config);
-        setReservations(reservations.map((reservation) => (reservation.id === reservationData.id ? reservationData : reservation)));
-        setSuccess('Reservation updated successfully');
+        // Editar reserva existente
+        await axios.put(`http://localhost:8081/api/v1/reservas/${reservationData.id}`, {
+          fechaDeReserva: reservationData.date,
+          numeroDePasajeros: reservationData.numeroDePasajeros
+        }, config);
+        setSuccess('Reserva actualizada exitosamente');
       } else {
-        const response = await axios.post('http://localhost:8081/api/v1/reservas', reservationData, config);
-        setReservations([...reservations, response.data]);
-        setSuccess('Reservation added successfully');
+        // No permitir agregar nuevas reservas
+        setError('No se permite agregar nuevas reservas');
+        return;
       }
+      const response = await axios.get('http://localhost:8081/api/v1/reservas', config);
+      setReservations(response.data);
     } catch (error) {
-      setError('Error adding/updating reservation');
+      console.error('Error actualizando la reserva:', error);
+      setError('Error al actualizar la reserva');
     }
   };
 
-  const handleDelete = async (reservationId) => {
+  const handleEditReservation = (reservation) => {
+    setReservationData({
+      id: reservation.idReserva,
+      date: reservation.fechaDeReserva,
+      numeroDePasajeros: reservation.numeroDePasajeros, // Asegurarse de incluir el número de pasajeros
+    });
+  };
+
+  const handleDeleteReservation = async (reservationId) => {
     try {
-      const token = localStorage.getItem('token');
       const config = {
         headers: { Authorization: `Bearer ${token}` }
       };
       await axios.delete(`http://localhost:8081/api/v1/reservas/${reservationId}`, config);
-      setReservations(reservations.filter((reservation) => reservation.id !== reservationId));
-      setSuccess('Reservation deleted successfully');
+      setReservations(reservations.filter((reservation) => reservation.idReserva !== reservationId));
+      setSuccess('Reserva eliminada exitosamente');
     } catch (error) {
-      setError('Error deleting reservation');
+      console.error('Error eliminando la reserva:', error);
+      setError('Error al eliminar la reserva');
     }
   };
 
-  const handleEdit = (reservation) => {
-    setReservationData(reservation);
-  };
-
   return (
-    <Card>
-      <Card.Body>
-        <Card.Title>Opciones de Reservas</Card.Title>
-          <Button 
-                    variant="outline-primary"
-                    onClick={() => navigate('/admin')}
-                    style={{marginTop: '5px', marginBottom: '10px'}}
-                  >
-                    🔙 Admin Menu
-          </Button>
-        {error && <Alert variant="danger">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
-        <Table striped bordered hover className="mt-3">
-          <thead>
-            <tr>
-              <th>Usuario</th>
-              <th>Vuelo</th>
-              <th>Fecha</th>
-              <th>Acciones</th>
+    <div className="admin-reservations">
+      <h2>Administrar Reservas</h2>
+      {error && <Alert variant="danger">{error}</Alert>}
+      {success && <Alert variant="success">{success}</Alert>}
+      <Table striped bordered hover className="mt-3">
+        <thead>
+          <tr>
+            <th>Id Reserva</th>
+            <th>Fecha de Reserva</th>
+            <th>Número de Pasajeros</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {reservations.map((reservation) => (
+            <tr key={reservation.idReserva}>
+              <td>{reservation.idReserva}</td>
+              <td>{reservation.fechaDeReserva}</td>
+              <td>{reservation.numeroDePasajeros}</td>
+              <td>
+                <Button variant="warning" onClick={() => handleEditReservation(reservation)}>
+                  Editar
+                </Button>
+                <Button variant="danger" className="ms-2" onClick={() => handleDeleteReservation(reservation.idReserva)}>
+                  Eliminar
+                </Button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {reservations.map((reservation) => (
-              <tr key={reservation.id}>
-                <td>{reservation.userId}</td>
-                <td>{reservation.flightId}</td>
-                <td>{reservation.date}</td>
-                <td>
-                  <Button variant="warning" onClick={() => handleEdit(reservation)}>
-                    Editar
-                  </Button>
-                  <Button variant="danger" onClick={() => handleDelete(reservation.id)}>
-                    Eliminar
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-        <Form onSubmit={handleSubmit} className="mt-3">
-          <Form.Group controlId="formUserId" className="mb-3">
-            <Form.Label>ID de Usuario</Form.Label>
-            <Form.Control
-              type="text"
-              name="userId"
-              placeholder="Ingrese el ID del usuario"
-              value={reservationData.userId}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="formFlightId" className="mb-3">
-            <Form.Label>ID de Vuelo</Form.Label>
-            <Form.Control
-              type="text"
-              name="flightId"
-              placeholder="Ingrese el ID del vuelo"
-              value={reservationData.flightId}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group controlId="formDate" className="mb-3">
-            <Form.Label>Fecha</Form.Label>
-            <Form.Control
-              type="date"
-              name="date"
-              value={reservationData.date}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Button variant="primary" type="submit">
-            {reservationData.id ? 'Actualizar Reserva' : 'Agregar Reserva'}
-          </Button>
-          <Button variant="secondary" className="ms-2" onClick={() => setReservationData({
-            id: '',
-            userId: '',
-            flightId: '',
-            date: '',
-          })}>
-            Limpiar
-          </Button>
-        </Form>
-      </Card.Body>
-    </Card>
+          ))}
+        </tbody>
+      </Table>
+
+      <Card className="mt-3">
+        <Card.Body>
+          <Form onSubmit={handleReservationSubmit}>
+            <Form.Group controlId="formDate" className="mb-3">
+              <Form.Label>Fecha de Reserva</Form.Label>
+              <Form.Control
+                type="date"
+                name="date"
+                value={reservationData.date}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+            <Form.Group controlId="formPassengers" className="mb-3">
+              <Form.Label>Número de Pasajeros</Form.Label>
+              <Form.Control
+                type="number"
+                name="numeroDePasajeros"
+                value={reservationData.numeroDePasajeros}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+            <Button variant="primary" type="submit">
+              {reservationData.id ? 'Actualizar Reserva' : 'Agregar Reserva'}
+            </Button>
+            <Button variant="secondary" className="ms-2" onClick={() => setReservationData({
+              id: '',
+              date: '',
+              numeroDePasajeros: 1, // Restablecer el número de pasajeros
+            })}>
+              Limpiar
+            </Button>
+          </Form>
+        </Card.Body>
+      </Card>
+    </div>
   );
 };
 

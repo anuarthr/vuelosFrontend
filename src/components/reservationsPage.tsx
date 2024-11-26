@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Modal, Form, Alert, Table } from 'react-bootstrap';
 import axios from 'axios';
-import { useNavigate } from'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/authcontext';
 
 const ReservationsPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const [flights, setFlights] = useState([]);
+  const [aerolineas, setAerolineas] = useState([]);
+  const [aeropuertos, setAeropuertos] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
-    destination: '',
     date: '',
     passengers: 1,
+    passengerDetails: [] // Inicializar la lista de detalles de pasajeros
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -23,9 +26,29 @@ const ReservationsPage = () => {
       return;
     }
 
+    const fetchFlights = async () => {
+      try {
+        const config = {
+          headers: { Authorization: `Bearer ${token}` }
+        };
+        const flightsResponse = await axios.get('http://localhost:8081/api/v1/vuelos', config);
+        setFlights(flightsResponse.data);
+        const aerolineasResponse = await axios.get('http://localhost:8081/api/v1/aerolineas', config);
+        setAerolineas(aerolineasResponse.data);
+        const aeropuertosResponse = await axios.get('http://localhost:8081/api/v1/aeropuertos', config);
+        setAeropuertos(aeropuertosResponse.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError('Error al obtener los datos');
+      }
+    };
+
     const fetchReservations = async () => {
       try {
-        const response = await axios.get(`http://localhost:8081/api/v1/reservas?userId=${user.id}`);
+        const config = {
+          headers: { Authorization: `Bearer ${token}` }
+        };
+        const response = await axios.get(`http://localhost:8081/api/v1/reservas/cliente/${user.id}`, config);
         setReservations(response.data);
       } catch (error) {
         console.error('Error fetching reservations:', error);
@@ -33,8 +56,9 @@ const ReservationsPage = () => {
       }
     };
 
+    fetchFlights();
     fetchReservations();
-  }, [user]);
+  }, [user, token]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -49,10 +73,15 @@ const ReservationsPage = () => {
     setError('');
     setSuccess('');
     try {
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
       const response = await axios.post('http://localhost:8081/api/v1/reservas', {
-        userId: user.id,
-        ...formData,
-      });
+        idCliente: user.id,
+        fechaDeReserva: formData.date,
+        numeroDePasajeros: formData.passengers,
+        pasajeros: formData.passengerDetails // Asegurarse de enviar la lista de pasajeros
+      }, config);
       setReservations([...reservations, response.data]);
       setShowModal(false);
       setSuccess('Reserva realizada exitosamente');
@@ -64,8 +93,11 @@ const ReservationsPage = () => {
 
   const handleDeleteReservation = async (reservationId) => {
     try {
-      await axios.delete(`http://localhost:8081/api/v1/reservas/${reservationId}`);
-      setReservations(reservations.filter((reservation) => reservation.id !== reservationId));
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+      await axios.delete(`http://localhost:8081/api/v1/reservas/${reservationId}`, config);
+      setReservations(reservations.filter((reservation) => reservation.idReserva !== reservationId));
       setSuccess('Reserva cancelada exitosamente');
     } catch (error) {
       console.error('Error deleting reservation:', error);
@@ -73,37 +105,76 @@ const ReservationsPage = () => {
     }
   };
 
+  const handleReserveFlight = (flight) => {
+    setShowModal(true);
+  };
+
   return (
     <div className="reservas">
-      <h2>Mis Reservas</h2>
-        <Button 
-                variant="outline-secondary" 
-                className="me-2"
-                onClick={() => navigate('/dashboard')}
-                style={{marginTop: '5px', marginBottom: '10px'}}
-              >
-                🔙 User Menu
-          </Button>
+      <h2>Vuelos Disponibles</h2>
+      <Button 
+        variant="outline-secondary" 
+        className="me-2"
+        onClick={() => navigate('/dashboard')}
+        style={{marginTop: '5px', marginBottom: '10px'}}
+      >
+        🔙 User Menu
+      </Button>
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
-      <Button variant="primary" onClick={() => setShowModal(true)}>Hacer una Reserva</Button>
       <Table striped bordered hover className="mt-3">
         <thead>
           <tr>
+            <th>Origen</th>
             <th>Destino</th>
-            <th>Fecha</th>
-            <th>Pasajeros</th>
+            <th>Fecha de Salida</th>
+            <th>Hora de Salida</th>
+            <th>Duración</th>
+            <th>Capacidad</th>
+            <th>Aerolínea</th>
+            <th>Aeropuerto</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {flights.map((flight) => (
+            <tr key={flight.idVuelo}>
+              <td>{flight.origen}</td>
+              <td>{flight.destino}</td>
+              <td>{flight.fechaDeSalida}</td>
+              <td>{flight.horaDeSalida}</td>
+              <td>{flight.duracion}</td>
+              <td>{flight.capacidad}</td>
+              <td>{aerolineas.find(a => a.idAerolinea === flight.aerolineaId)?.nombre || 'N/A'}</td>
+              <td>{aeropuertos.find(a => a.idAeropuerto === flight.aeropuertoId)?.nombre || 'N/A'}</td>
+              <td>
+                <Button variant="primary" onClick={() => handleReserveFlight(flight)}>
+                  Reservar
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+
+      <h2>Mis Reservas</h2>
+      <Table striped bordered hover className="mt-3">
+        <thead>
+          <tr>
+            <th>Id Reserva</th>
+            <th>Fecha Reserva</th>
+            <th>Número de Pasajeros</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {reservations.map((reservation, index) => (
             <tr key={index}>
-              <td>{reservation.destination}</td>
-              <td>{reservation.date}</td>
-              <td>{reservation.passengers}</td>
+              <td>{reservation.idReserva}</td>
+              <td>{reservation.fechaDeReserva}</td>
+              <td>{reservation.numeroDePasajeros}</td>
               <td>
-                <Button variant="danger" onClick={() => handleDeleteReservation(reservation.id)}>
+                <Button variant="danger" onClick={() => handleDeleteReservation(reservation.idReserva)}>
                   Cancelar
                 </Button>
               </td>
@@ -118,18 +189,8 @@ const ReservationsPage = () => {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleReservationSubmit}>
-            <Form.Group controlId="formDestination" className="mb-3">
-              <Form.Label>Destino</Form.Label>
-              <Form.Control
-                type="text"
-                name="destination"
-                placeholder="Ingrese el destino"
-                value={formData.destination}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
             <Form.Group controlId="formDate" className="mb-3">
-              <Form.Label>Fecha</Form.Label>
+              <Form.Label>Fecha de Reserva</Form.Label>
               <Form.Control
                 type="date"
                 name="date"
@@ -142,7 +203,6 @@ const ReservationsPage = () => {
               <Form.Control
                 type="number"
                 name="passengers"
-                min="1"
                 value={formData.passengers}
                 onChange={handleInputChange}
               />

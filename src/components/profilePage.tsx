@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Form, Alert } from 'react-bootstrap';
 import axios from 'axios';
+import { useNavigate } from'react-router-dom';
 import { useAuth } from '../contexts/authcontext';
 
 const Profile = () => {
+  const navigate = useNavigate();
   const { user, login, logout } = useAuth();
   const [profileData, setProfileData] = useState({
     nombre: user?.nombre || '',
@@ -75,6 +77,14 @@ const Profile = () => {
   return (
     <div className="profile-page" style={{ width: '100%', maxWidth: '600px', margin: 'auto', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}>
       <h2 style={{ fontWeight: 'bold' }}>Perfil</h2>
+        <Button 
+                variant="outline-secondary" 
+                  className="me-2"
+                onClick={() => navigate('/dashboard')}
+                style={{marginTop: '5px', marginBottom: '10px'}}
+              >
+                🔙 User Menu
+        </Button>
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
       <Form onSubmit={handleProfileSubmit}>

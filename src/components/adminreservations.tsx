@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Table, Alert, Card } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const AdminReservations = () => {
+  const navigate = useNavigate();
   const [reservations, setReservations] = useState([]);
   const [reservationData, setReservationData] = useState({
     id: '',
@@ -83,6 +85,13 @@ const AdminReservations = () => {
     <Card>
       <Card.Body>
         <Card.Title>Opciones de Reservas</Card.Title>
+          <Button 
+                    variant="outline-primary"
+                    onClick={() => navigate('/admin')}
+                    style={{marginTop: '5px', marginBottom: '10px'}}
+                  >
+                    🔙 Admin Menu
+          </Button>
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
         <Table striped bordered hover className="mt-3">

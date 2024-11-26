@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Table, Alert, Card } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const AdminFlights = () => {
+  const navigate = useNavigate();
   const [flights, setFlights] = useState([]);
   const [aerolineas, setAerolineas] = useState([]);
   const [aeropuertos, setAeropuertos] = useState([]);
@@ -116,6 +118,13 @@ const AdminFlights = () => {
     <Card>
       <Card.Body>
         <Card.Title>Manage Flights</Card.Title>
+          <Button 
+                  variant="outline-primary"
+                  onClick={() => navigate('/admin')}
+                  style={{marginTop: '5px', marginBottom: '10px'}}
+                >
+                 🔙 Admin Menu
+          </Button>
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
         <Form onSubmit={handleSubmit}>

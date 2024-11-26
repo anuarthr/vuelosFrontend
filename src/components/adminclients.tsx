@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Card, Form, Modal } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const AdminClients = () => {
+  const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
@@ -83,6 +85,13 @@ const AdminClients = () => {
     <Card>
       <Card.Body>
         <Card.Title>Clientes</Card.Title>
+          <Button 
+                  variant="outline-primary"
+                  onClick={() => navigate('/admin')}
+                  style={{marginTop: '5px', marginBottom: '10px'}}
+                >
+                  🔙 Admin Menu
+          </Button>
         <Table striped bordered hover>
           <thead>
             <tr>

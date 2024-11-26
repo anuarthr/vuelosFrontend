@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Alert, Button, Modal, Form } from 'react-bootstrap';
 import axios from 'axios';
+import { useNavigate } from'react-router-dom';
 import { useAuth } from '../contexts/authcontext';
 
 const FlightsPage = () => {
+  const navigate = useNavigate();
   const { user, token } = useAuth();
   const [flights, setFlights] = useState([]);
   const [aerolineas, setAerolineas] = useState([]);
@@ -63,6 +65,14 @@ const FlightsPage = () => {
   return (
     <div>
       <h1>Vuelos Disponibles</h1>
+        <Button 
+                variant="outline-secondary" 
+                className="me-2"
+                onClick={() => navigate('/dashboard')}
+                style={{marginTop: '5px', marginBottom: '10px'}}
+              >
+                🔙 User Menu
+          </Button>
       {error && <Alert variant="danger">{error}</Alert>}
       <Table striped bordered hover>
         <thead>

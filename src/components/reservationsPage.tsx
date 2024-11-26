@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Modal, Form, Alert, Table } from 'react-bootstrap';
 import axios from 'axios';
+import { useNavigate } from'react-router-dom';
 import { useAuth } from '../contexts/authcontext';
 
 const ReservationsPage = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [reservations, setReservations] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -74,6 +76,14 @@ const ReservationsPage = () => {
   return (
     <div className="reservas">
       <h2>Mis Reservas</h2>
+        <Button 
+                variant="outline-secondary" 
+                className="me-2"
+                onClick={() => navigate('/dashboard')}
+                style={{marginTop: '5px', marginBottom: '10px'}}
+              >
+                🔙 User Menu
+          </Button>
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
       <Button variant="primary" onClick={() => setShowModal(true)}>Hacer una Reserva</Button>

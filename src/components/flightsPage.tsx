@@ -6,113 +6,92 @@ import { useAuth } from '../contexts/authcontext';
 const FlightsPage = () => {
   const { user, token } = useAuth();
   const [flights, setFlights] = useState([]);
+  const [aerolineas, setAerolineas] = useState([]);
+  const [aeropuertos, setAeropuertos] = useState([]);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
-    destination: '',
-    date: '',
-    price: '',
-    airline: '',
-    airport: '',
-  });
+  const [selectedFlight, setSelectedFlight] = useState(null);
 
   useEffect(() => {
-    const fetchFlights = async () => {
+    const fetchData = async () => {
       if (!token) {
         setError('Usuario no autenticado');
         return;
       }
       try {
-        const response = await axios.get('http://localhost:8081/api/v1/vuelos', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setFlights(response.data);
+        const config = {
+          headers: { Authorization: `Bearer ${token}` }
+        };
+        const flightsResponse = await axios.get('http://localhost:8081/api/v1/vuelos', config);
+        setFlights(flightsResponse.data);
+        const aerolineasResponse = await axios.get('http://localhost:8081/api/v1/aerolineas', config);
+        setAerolineas(aerolineasResponse.data);
+        const aeropuertosResponse = await axios.get('http://localhost:8081/api/v1/aeropuertos', config);
+        setAeropuertos(aeropuertosResponse.data);
       } catch (error) {
-        console.error('Error fetching flights:', error);
-        setError('Error al obtener los vuelos');
+        console.error('Error fetching data:', error);
+        setError('Error al obtener los datos');
       }
     };
 
-    fetchFlights();
+    fetchData();
   }, [token]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+  const handleBuyFlight = (flight) => {
+    setSelectedFlight(flight);
+    setShowModal(true);
   };
 
-  const handleFlightSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      const response = await axios.post('http://localhost:8081/api/v1/vuelos', formData, {
+      await axios.post(`http://localhost:8081/api/v1/compras`, {
+        flightId: selectedFlight.idVuelo,
+        userId: user.id,
+      }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setFlights([...flights, response.data]);
       setShowModal(false);
-    } catch (error) {
-      console.error('Error adding flight:', error);
-      setError('Error al agregar el vuelo');
-    }
-  };
-
-  const handleDeleteFlight = async (flightId) => {
-    try {
-      await axios.delete(`http://localhost:8081/api/v1/vuelos/${flightId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setFlights(flights.filter((flight) => flight.id !== flightId));
-    } catch (error) {
-      console.error('Error deleting flight:', error);
-      setError('Error al eliminar el vuelo');
-    }
-  };
-
-  const handleBuyFlight = async (flightId) => {
-    try {
-      await axios.post(`http://localhost:8081/api/v1/vuelos/${flightId}/comprar`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      alert('Vuelo comprado exitosamente');
+      alert('Compra realizada con éxito');
     } catch (error) {
       console.error('Error buying flight:', error);
-      setError('Error al comprar el vuelo');
+      setError('Error al realizar la compra');
     }
   };
 
   return (
-    <div className="flights-page">
-      <h2>Vuelos Disponibles</h2>
+    <div>
+      <h1>Vuelos Disponibles</h1>
       {error && <Alert variant="danger">{error}</Alert>}
-      <Button variant="primary" onClick={() => setShowModal(true)}>Agregar Vuelo</Button>
-      <Table striped bordered hover className="mt-3">
+      <Table striped bordered hover>
         <thead>
           <tr>
+            <th>Origen</th>
             <th>Destino</th>
-            <th>Fecha</th>
-            <th>Precio</th>
+            <th>Fecha de Salida</th>
+            <th>Hora de Salida</th>
+            <th>Duración</th>
+            <th>Capacidad</th>
             <th>Aerolínea</th>
             <th>Aeropuerto</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {flights.map((flight, index) => (
-            <tr key={index}>
-              <td>{flight.destination}</td>
-              <td>{flight.date}</td>
-              <td>{flight.price}</td>
-              <td>{flight.airline}</td>
-              <td>{flight.airport}</td>
+          {flights.map((flight) => (
+            <tr key={flight.idVuelo}>
+              <td>{flight.origen}</td>
+              <td>{flight.destino}</td>
+              <td>{flight.fechaDeSalida}</td>
+              <td>{flight.horaDeSalida}</td>
+              <td>{flight.duracion}</td>
+              <td>{flight.capacidad}</td>
+              <td>{aerolineas.find(a => a.idAerolinea === flight.aerolineaId)?.nombre || 'N/A'}</td>
+              <td>{aeropuertos.find(a => a.idAeropuerto === flight.aeropuertoId)?.nombre || 'N/A'}</td>
               <td>
-                <Button variant="success" onClick={() => handleBuyFlight(flight.id)}>
+                <Button variant="primary" onClick={() => handleBuyFlight(flight)}>
                   Comprar
-                </Button>
-                <Button variant="danger" onClick={() => handleDeleteFlight(flight.id)}>
-                  Eliminar
                 </Button>
               </td>
             </tr>
@@ -122,37 +101,62 @@ const FlightsPage = () => {
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Agregar Vuelo</Modal.Title>
+          <Modal.Title>Confirmar Compra</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit={handleFlightSubmit}>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group controlId="formOrigen" className="mb-3">
+              <Form.Label>Origen</Form.Label>
+              <Form.Control
+                type="text"
+                name="origen"
+                value={selectedFlight?.origen || ''}
+                readOnly
+              />
+            </Form.Group>
             <Form.Group controlId="formDestination" className="mb-3">
               <Form.Label>Destino</Form.Label>
               <Form.Control
                 type="text"
                 name="destination"
-                placeholder="Ingrese el destino"
-                value={formData.destination}
-                onChange={handleInputChange}
+                value={selectedFlight?.destino || ''}
+                readOnly
               />
             </Form.Group>
             <Form.Group controlId="formDate" className="mb-3">
-              <Form.Label>Fecha</Form.Label>
-              <Form.Control
-                type="date"
-                name="date"
-                value={formData.date}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group controlId="formPrice" className="mb-3">
-              <Form.Label>Precio</Form.Label>
+              <Form.Label>Fecha de Salida</Form.Label>
               <Form.Control
                 type="text"
-                name="price"
-                placeholder="Ingrese el precio"
-                value={formData.price}
-                onChange={handleInputChange}
+                name="date"
+                value={selectedFlight?.fechaDeSalida || ''}
+                readOnly
+              />
+            </Form.Group>
+            <Form.Group controlId="formTime" className="mb-3">
+              <Form.Label>Hora de Salida</Form.Label>
+              <Form.Control
+                type="text"
+                name="time"
+                value={selectedFlight?.horaDeSalida || ''}
+                readOnly
+              />
+            </Form.Group>
+            <Form.Group controlId="formDuration" className="mb-3">
+              <Form.Label>Duración</Form.Label>
+              <Form.Control
+                type="text"
+                name="duration"
+                value={selectedFlight?.duracion || ''}
+                readOnly
+              />
+            </Form.Group>
+            <Form.Group controlId="formCapacity" className="mb-3">
+              <Form.Label>Capacidad</Form.Label>
+              <Form.Control
+                type="text"
+                name="capacity"
+                value={selectedFlight?.capacidad || ''}
+                readOnly
               />
             </Form.Group>
             <Form.Group controlId="formAirline" className="mb-3">
@@ -160,9 +164,8 @@ const FlightsPage = () => {
               <Form.Control
                 type="text"
                 name="airline"
-                placeholder="Ingrese la aerolínea"
-                value={formData.airline}
-                onChange={handleInputChange}
+                value={aerolineas.find(a => a.idAerolinea === selectedFlight?.aerolineaId)?.nombre || 'N/A'}
+                readOnly
               />
             </Form.Group>
             <Form.Group controlId="formAirport" className="mb-3">
@@ -170,13 +173,12 @@ const FlightsPage = () => {
               <Form.Control
                 type="text"
                 name="airport"
-                placeholder="Ingrese el aeropuerto"
-                value={formData.airport}
-                onChange={handleInputChange}
+                value={aeropuertos.find(a => a.idAeropuerto === selectedFlight?.aeropuertoId)?.nombre || 'N/A'}
+                readOnly
               />
             </Form.Group>
             <Button variant="primary" type="submit">
-              Agregar Vuelo
+              Confirmar Compra
             </Button>
           </Form>
         </Modal.Body>
